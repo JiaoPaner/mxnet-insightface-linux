@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+#include <stdint.h>
 /*!
  *  Copyright (c) 2015 by Contributors
  * \file c_predict_api.h
