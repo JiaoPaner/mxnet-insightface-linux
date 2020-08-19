@@ -1,0 +1,8 @@
+//
+// Created by jiaopan on 8/19/20.
+//
+
+#ifndef FACE_RECOGNITION_MXNET_MTCNN_HPP
+#define FACE_RECOGNITION_MXNET_MTCNN_HPP
+
+#endif //FACE_RECOGNITION_MXNET_MTCNN_HPP
