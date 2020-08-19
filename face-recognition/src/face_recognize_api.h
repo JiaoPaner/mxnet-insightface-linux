@@ -2,7 +2,33 @@
 // Created by jiaopan on 8/19/20.
 //
 
-#ifndef FACE_RECOGNITION_FACE_RECOGNIZE_API_H
-#define FACE_RECOGNITION_FACE_RECOGNIZE_API_H
+extern "C" {
 
-#endif //FACE_RECOGNITION_FACE_RECOGNIZE_API_H
+int loadModel(char* mtcnn_model, char* insightface_params, char * insightface_json);
+
+char*  extractFaceFeatureByFile(char* src,int detected,int type);
+
+char*  extractFaceFeatureByByte(unsigned char* src, int width, int height, int channels, int detected,int type);
+
+/*
+    base64_data:"/9j/4AAQSkZJRgABAQE..."
+*/
+char*  extractFaceFeatureByBase64(char* base64_data,int detected,int type);
+
+/*
+    distance < 1:same person or not
+    base/target:face features
+*/
+char*  computeDistance(char* base,char* target);
+
+/*
+    base/target:image path
+*/
+char*  computeDistanceByFile(char* base_src, char* target_src, int detected);
+
+/*
+    base/target:"/9j/4AAQSkZJRgABAQE..."
+*/
+char*  computeDistanceByBase64(char* base_data,char* target_data, int detected);
+}
+
