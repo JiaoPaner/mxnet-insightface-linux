@@ -70,11 +70,6 @@ class OMPException {
       if (!omp_exception_) {
         omp_exception_ = std::current_exception();
       }
-    } catch (std::exception &ex) {
-      std::lock_guard<std::mutex> lock(mutex_);
-      if (!omp_exception_) {
-        omp_exception_ = std::current_exception();
-      }
     }
   }
 

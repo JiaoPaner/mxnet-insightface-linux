@@ -69,7 +69,7 @@ namespace cpp {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/batch_norm_v1.cc:L95
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/batch_norm_v1.cc:L95
  * \param symbol_name name of the resulting symbol
  * \param data Input data to batch normalization
  * \param gamma gamma array
@@ -107,7 +107,7 @@ inline Symbol BatchNorm_v1(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/all_finite.cc:L101
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/contrib/all_finite.cc:L101
  * \param symbol_name name of the resulting symbol
  * \param data Array
  * \param init_output Initialize output to 1.
@@ -127,7 +127,7 @@ inline Symbol all_finite(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/all_finite.cc:L133
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/contrib/all_finite.cc:L133
  * \param symbol_name name of the resulting symbol
  * \param data Arrays
  * \param num_arrays Number of arrays.
@@ -181,7 +181,7 @@ inline Symbol multi_all_finite(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/krprod.cc:L108
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/contrib/krprod.cc:L108
  * \param symbol_name name of the resulting symbol
  * \param args Positional input matrices
  * \return new symbol
@@ -194,249 +194,16 @@ inline Symbol khatri_rao(const std::string& symbol_name,
 }
 
 /*!
- * \brief Compute the LARS coefficients of multiple weights and grads from their sums of
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/multi_lars.cc:L37
- * \param symbol_name name of the resulting symbol
- * \param lrs Learning rates to scale by LARS coefficient
- * \param weights_sum_sq sum of square of weights arrays
- * \param grads_sum_sq sum of square of gradients arrays
- * \param wds weight decays
- * \param eta LARS eta
- * \param eps LARS eps
- * \param rescale_grad Gradient rescaling factor
- * \return new symbol
- */
-inline Symbol multi_lars(const std::string& symbol_name,
-                         Symbol lrs,
-                         Symbol weights_sum_sq,
-                         Symbol grads_sum_sq,
-                         Symbol wds,
-                         mx_float eta,
-                         mx_float eps,
-                         mx_float rescale_grad = 1) {
-  return Operator("multi_lars")
-           .SetParam("eta", eta)
-           .SetParam("eps", eps)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetInput("lrs", lrs)
-           .SetInput("weights_sum_sq", weights_sum_sq)
-           .SetInput("grads_sum_sq", grads_sum_sq)
-           .SetInput("wds", wds)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Compute the sums of squares of multiple arrays
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/multi_sum_sq.cc:L36
- * \param symbol_name name of the resulting symbol
- * \param data Arrays
- * \param num_arrays number of input arrays.
- * \return new symbol
- */
-inline Symbol multi_sum_sq(const std::string& symbol_name,
-                           const std::vector<Symbol>& data,
-                           int num_arrays) {
-  return Operator("multi_sum_sq")
-           .SetParam("num_arrays", num_arrays)
-(data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Update function for Stochastic Gradient Descent (SDG) optimizer.
- *
- *        It updates the weights using::
- *
- *        weight = weight - learning_rate * (gradient + wd * weight)
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/preloaded_multi_sgd.cc:L42
- * \param symbol_name name of the resulting symbol
- * \param data Weights, gradients, learning rates and weight decays
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \param num_weights Number of updated weights.
- * \return new symbol
- */
-inline Symbol preloaded_multi_sgd_update(const std::string& symbol_name,
-                                         const std::vector<Symbol>& data,
-                                         mx_float rescale_grad = 1,
-                                         mx_float clip_gradient = -1,
-                                         int num_weights = 1) {
-  return Operator("preloaded_multi_sgd_update")
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetParam("num_weights", num_weights)
-(data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Momentum update function for Stochastic Gradient Descent (SGD) optimizer.
- *
- *        Momentum update has better convergence rates on neural networks. Mathematically
- *        like below:
- *
- *        .. math::
- *
- *        v_1 = \alpha * \nabla J(W_0)\\
- *        v_t = \gamma v_{t-1} - \alpha * \nabla J(W_{t-1})\\
- *        W_t = W_{t-1} + v_t
- *
- *        It updates the weights using::
- *
- *        v = momentum * v - learning_rate * gradient
- *        weight += v
- *
- *        Where the parameter ``momentum`` is the decay rate of momentum estimates at
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/preloaded_multi_sgd.cc:L91
- * \param symbol_name name of the resulting symbol
- * \param data Weights, gradients, momentum, learning rates and weight decays
- * \param momentum The decay rate of momentum estimates at each epoch.
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \param num_weights Number of updated weights.
- * \return new symbol
- */
-inline Symbol preloaded_multi_sgd_mom_update(const std::string& symbol_name,
-                                             const std::vector<Symbol>& data,
-                                             mx_float momentum = 0,
-                                             mx_float rescale_grad = 1,
-                                             mx_float clip_gradient = -1,
-                                             int num_weights = 1) {
-  return Operator("preloaded_multi_sgd_mom_update")
-           .SetParam("momentum", momentum)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetParam("num_weights", num_weights)
-(data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Update function for multi-precision Stochastic Gradient Descent (SDG) optimizer.
- *
- *        It updates the weights using::
- *
- *        weight = weight - learning_rate * (gradient + wd * weight)
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/preloaded_multi_sgd.cc:L140
- * \param symbol_name name of the resulting symbol
- * \param data Weights, gradients, learning rates and weight decays
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \param num_weights Number of updated weights.
- * \return new symbol
- */
-inline Symbol preloaded_multi_mp_sgd_update(const std::string& symbol_name,
-                                            const std::vector<Symbol>& data,
-                                            mx_float rescale_grad = 1,
-                                            mx_float clip_gradient = -1,
-                                            int num_weights = 1) {
-  return Operator("preloaded_multi_mp_sgd_update")
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetParam("num_weights", num_weights)
-(data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Momentum update function for multi-precision Stochastic Gradient Descent (SGD)
- *
- *        Momentum update has better convergence rates on neural networks. Mathematically
- *        like below:
- *
- *        .. math::
- *
- *        v_1 = \alpha * \nabla J(W_0)\\
- *        v_t = \gamma v_{t-1} - \alpha * \nabla J(W_{t-1})\\
- *        W_t = W_{t-1} + v_t
- *
- *        It updates the weights using::
- *
- *        v = momentum * v - learning_rate * gradient
- *        weight += v
- *
- *        Where the parameter ``momentum`` is the decay rate of momentum estimates at
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/preloaded_multi_sgd.cc:L200
- * \param symbol_name name of the resulting symbol
- * \param data Weights, gradients, momentums, learning rates and weight decays
- * \param momentum The decay rate of momentum estimates at each epoch.
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \param num_weights Number of updated weights.
- * \return new symbol
- */
-inline Symbol preloaded_multi_mp_sgd_mom_update(const std::string& symbol_name,
-                                                const std::vector<Symbol>& data,
-                                                mx_float momentum = 0,
-                                                mx_float rescale_grad = 1,
-                                                mx_float clip_gradient = -1,
-                                                int num_weights = 1) {
-  return Operator("preloaded_multi_mp_sgd_mom_update")
-           .SetParam("momentum", momentum)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetParam("num_weights", num_weights)
-(data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Set to zero multiple arrays
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/reset_arrays.cc:L36
- * \param symbol_name name of the resulting symbol
- * \param data Arrays
- * \param num_arrays number of input arrays.
- * \return new symbol
- */
-inline Symbol reset_arrays(const std::string& symbol_name,
-                           const std::vector<Symbol>& data,
-                           int num_arrays) {
-  return Operator("reset_arrays")
-           .SetParam("num_arrays", num_arrays)
-(data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
  * \brief Apply a custom operator implemented in a frontend language (like Python).
  *
  *        Custom operators should override required methods like `forward` and `backward`.
  *        The custom operator must be registered before it can be used.
- *        Please check the tutorial here:
+ *        Please check the tutorial here: http://mxnet.io/faq/new_op.html.
  *
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/custom/custom.cc:L546
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/custom/custom.cc:L546
  * \param symbol_name name of the resulting symbol
  * \param data Input data for the custom operator.
  * \param op_type Name of the custom operator. This is the name that is passed to
@@ -503,10 +270,11 @@ enum class LeakyReLUActType {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/leaky_relu.cc:L161
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/leaky_relu.cc:L65
  * \param symbol_name name of the resulting symbol
  * \param data Input data to activation function.
- * \param gamma Input data to activation function.
+ * \param gamma Slope parameter for PReLU. Only required when act_type is 'prelu'. It
+ *        should be either a vector of size 1, or the same size as the second dimension
  * \param act_type Activation function to be applied.
  * \param slope Init slope for the activation. (For leaky and elu only)
  * \param lower_bound Lower bound of random slope. (For rrelu only)
@@ -570,7 +338,7 @@ inline Symbol LeakyReLU(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/loss_binary_op.cc:L59
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/loss_binary_op.cc:L59
  * \param symbol_name name of the resulting symbol
  * \param data Input data
  * \param label Input label
@@ -609,7 +377,7 @@ enum class ActivationActType {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/activation.cc:L168
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/activation.cc:L167
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \param act_type Activation function to be applied.
@@ -684,7 +452,7 @@ inline Symbol Activation(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/batch_norm.cc:L571
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/batch_norm.cc:L572
  * \param symbol_name name of the resulting symbol
  * \param data Input data to batch normalization
  * \param gamma gamma array
@@ -698,10 +466,6 @@ inline Symbol Activation(const std::string& symbol_name,
  * \param output_mean_var Output the mean and inverse std
  * \param axis Specify which shape axis the channel is specified
  * \param cudnn_off Do not select CUDNN operator, if available
- * \param min_calib_range The minimum scalar value in the form of float32 obtained
- *        through calibration. If present, it will be used to by quantized batch norm op
- * \param max_calib_range The maximum scalar value in the form of float32 obtained
- *        through calibration. If present, it will be used to by quantized batch norm op
  * \return new symbol
  */
 inline Symbol BatchNorm(const std::string& symbol_name,
@@ -716,9 +480,7 @@ inline Symbol BatchNorm(const std::string& symbol_name,
                         bool use_global_stats = false,
                         bool output_mean_var = false,
                         int axis = 1,
-                        bool cudnn_off = false,
-                        dmlc::optional<float> min_calib_range = dmlc::optional<float>(),
-                        dmlc::optional<float> max_calib_range = dmlc::optional<float>()) {
+                        bool cudnn_off = false) {
   return Operator("BatchNorm")
            .SetParam("eps", eps)
            .SetParam("momentum", momentum)
@@ -727,8 +489,6 @@ inline Symbol BatchNorm(const std::string& symbol_name,
            .SetParam("output_mean_var", output_mean_var)
            .SetParam("axis", axis)
            .SetParam("cudnn_off", cudnn_off)
-           .SetParam("min_calib_range", min_calib_range)
-           .SetParam("max_calib_range", max_calib_range)
            .SetInput("data", data)
            .SetInput("gamma", gamma)
            .SetInput("beta", beta)
@@ -777,7 +537,7 @@ inline Symbol BatchNorm(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/concat.cc:L383
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/concat.cc:L371
  * \param symbol_name name of the resulting symbol
  * \param data List of arrays to concatenate
  * \param num_args Number of inputs to be concated.
@@ -892,7 +652,7 @@ enum class ConvolutionLayout {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/convolution.cc:L473
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/convolution.cc:L472
  * \param symbol_name name of the resulting symbol
  * \param data Input data to the ConvolutionOp.
  * \param weight Weight matrix.
@@ -1021,7 +781,7 @@ enum class CTCLossBlankLabel {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/ctc_loss.cc:L100
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/ctc_loss.cc:L100
  * \param symbol_name name of the resulting symbol
  * \param data Input ndarray
  * \param label Ground-truth labels for the loss.
@@ -1202,7 +962,7 @@ enum class DropoutMode {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/dropout.cc:L96
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/dropout.cc:L95
  * \param symbol_name name of the resulting symbol
  * \param data Input array to which dropout will be applied.
  * \param p Fraction of the input that gets dropped out during training time.
@@ -1264,7 +1024,7 @@ inline Symbol Dropout(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/fully_connected.cc:L291
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/fully_connected.cc:L277
  * \param symbol_name name of the resulting symbol
  * \param data Input data.
  * \param weight Weight matrix.
@@ -1288,49 +1048,6 @@ inline Symbol FullyConnected(const std::string& symbol_name,
            .SetInput("data", data)
            .SetInput("weight", weight)
            .SetInput("bias", bias)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Group normalization.
- *
- *        The input channels are separated into ``num_groups`` groups, each containing
- *        The mean and standard-deviation are calculated separately over the each group.
- *
- *        .. math::
- *
- *        data = data.reshape((N, num_groups, C // num_groups, ...))
- *        out = \frac{data - mean(data, axis)}{\sqrt{var(data, axis) + \epsilon}} * gamma
- *
- *        Both ``gamma`` and ``beta`` are learnable parameters.
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/group_norm.cc:L77
- * \param symbol_name name of the resulting symbol
- * \param data Input data
- * \param gamma gamma array
- * \param beta beta array
- * \param num_groups Total number of groups.
- * \param eps An `epsilon` parameter to prevent division by 0.
- * \param output_mean_var Output the mean and std calculated along the given axis.
- * \return new symbol
- */
-inline Symbol GroupNorm(const std::string& symbol_name,
-                        Symbol data,
-                        Symbol gamma,
-                        Symbol beta,
-                        int num_groups = 1,
-                        mx_float eps = 9.99999975e-06,
-                        bool output_mean_var = false) {
-  return Operator("GroupNorm")
-           .SetParam("num_groups", num_groups)
-           .SetParam("eps", eps)
-           .SetParam("output_mean_var", output_mean_var)
-           .SetInput("data", data)
-           .SetInput("gamma", gamma)
-           .SetInput("beta", beta)
            .CreateSymbol(symbol_name);
 }
 
@@ -1363,7 +1080,7 @@ inline Symbol GroupNorm(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/layer_norm.cc:L156
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/layer_norm.cc:L155
  * \param symbol_name name of the resulting symbol
  * \param data Input data to layer normalization
  * \param gamma gamma array
@@ -1390,61 +1107,6 @@ inline Symbol LayerNorm(const std::string& symbol_name,
            .CreateSymbol(symbol_name);
 }
 
-/*! \brief DType of the output in case this can't be inferred. Defaults to the same as
- */
-enum class Log_softmaxDtype {
-  kNone = 0,
-  kFloat16 = 1,
-  kFloat32 = 2,
-  kFloat64 = 3
-};
-
-/*!
- * \brief Computes the log softmax of the input.
- *        This is equivalent to computing softmax followed by log.
- *
- *        Examples::
- *
- *        >>> x = mx.nd.array([1, 2, .1])
- *        >>> mx.nd.log_softmax(x).asnumpy()
- *        array([-1.41702998, -0.41702995, -2.31702995], dtype=float32)
- *
- *        >>> x = mx.nd.array( [[1, 2, .1],[.1, 2, 1]] )
- *        >>> mx.nd.log_softmax(x, axis=0).asnumpy()
- *        array([[-0.34115392, -0.69314718, -1.24115396],
- *        [-1.24115396, -0.69314718, -0.34115392]], dtype=float32)
- *
- *
- *
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \param axis The axis along which to compute softmax.
- * \param temperature Temperature parameter in softmax
- * \param dtype DType of the output in case this can't be inferred. Defaults to the same
- * \param use_length Whether to use the length input as a mask over the data input.
- * \return new symbol
- */
-inline Symbol log_softmax(const std::string& symbol_name,
-                          Symbol data,
-                          int axis = -1,
-                          dmlc::optional<double> temperature = dmlc::optional<double>(),
-                          Log_softmaxDtype dtype = Log_softmaxDtype::kNone,
-                          dmlc::optional<bool> use_length = dmlc::optional<bool>(0)) {
-  static const char *Log_softmaxDtypeValues[] = {
-    "None",
-    "float16",
-    "float32",
-    "float64"
-  };
-  return Operator("log_softmax")
-           .SetParam("axis", axis)
-           .SetParam("temperature", temperature)
-           .SetParam("dtype", Log_softmaxDtypeValues[int(dtype)])
-           .SetParam("use_length", use_length)
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
 /*!
  * \brief Applies local response normalization to the input.
  *
@@ -1464,7 +1126,7 @@ inline Symbol log_softmax(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/lrn.cc:L164
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/lrn.cc:L164
  * \param symbol_name name of the resulting symbol
  * \param data Input data to LRN
  * \param nsize normalization window width in elements.
@@ -1511,7 +1173,7 @@ inline Symbol LRN(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/moments.cc:L54
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/moments.cc:L54
  * \param symbol_name name of the resulting symbol
  * \param data Input ndarray
  * \param axes Array of ints. Axes along which to compute mean and variance.
@@ -1585,8 +1247,8 @@ enum class PoolingLayout {
  *
  *        f(x, k, p, s) = ceil((x+2*p-k)/s)+1
  *
- *        When ``global_pool`` is set to be true, then global pooling is performed. It
- *        ``kernel=(height, width)`` and set the appropiate padding to 0.
+ *        But ``global_pool`` is set to be true, then do a global pooling, namely reset
+ *        ``kernel=(height, width)``.
  *
  *        Three pooling options are supported by ``pool_type``:
  *
@@ -1612,7 +1274,7 @@ enum class PoolingLayout {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/pooling.cc:L417
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/pooling.cc:L416
  * \param symbol_name name of the resulting symbol
  * \param data Input data to the pooling operator.
  * \param kernel Pooling kernel size: (y, x) or (d, y, x)
@@ -1712,23 +1374,19 @@ enum class SoftmaxDtype {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/softmax.cc:L103
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/softmax.cc:L93
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
- * \param length The length array.
  * \param axis The axis along which to compute softmax.
  * \param temperature Temperature parameter in softmax
  * \param dtype DType of the output in case this can't be inferred. Defaults to the same
- * \param use_length Whether to use the length input as a mask over the data input.
  * \return new symbol
  */
 inline Symbol softmax(const std::string& symbol_name,
                       Symbol data,
-                      Symbol length,
                       int axis = -1,
                       dmlc::optional<double> temperature = dmlc::optional<double>(),
-                      SoftmaxDtype dtype = SoftmaxDtype::kNone,
-                      dmlc::optional<bool> use_length = dmlc::optional<bool>(0)) {
+                      SoftmaxDtype dtype = SoftmaxDtype::kNone) {
   static const char *SoftmaxDtypeValues[] = {
     "None",
     "float16",
@@ -1739,63 +1397,6 @@ inline Symbol softmax(const std::string& symbol_name,
            .SetParam("axis", axis)
            .SetParam("temperature", temperature)
            .SetParam("dtype", SoftmaxDtypeValues[int(dtype)])
-           .SetParam("use_length", use_length)
-           .SetInput("data", data)
-           .SetInput("length", length)
-           .CreateSymbol(symbol_name);
-}
-
-/*! \brief Specifies how to compute the softmax. If set to ``instance``, it computes
- *        softmax for each instance. If set to ``channel``, It computes cross channel
- */
-enum class SoftmaxActivationMode {
-  kChannel = 0,
-  kInstance = 1
-};
-
-/*!
- * \brief Applies softmax activation to input. This is intended for internal layers.
- *
- *        .. note::
- *
- *        This operator has been deprecated, please use `softmax`.
- *
- *        If `mode` = ``instance``, this operator will compute a softmax for each
- *        This is the default mode.
- *
- *        If `mode` = ``channel``, this operator will compute a k-class softmax at each
- *        of each instance, where `k` = ``num_channel``. This mode can only be used when
- *        has at least 3 dimensions.
- *        This can be used for `fully convolutional network`, `image segmentation`, etc.
- *
- *        Example::
- *
- *        >>> input_array = mx.nd.array([[3., 0.5, -0.5, 2., 7.],
- *        >>>                            [2., -.4, 7.,   3., 0.2]])
- *        >>> softmax_act = mx.nd.SoftmaxActivation(input_array)
- *        >>> print softmax_act.asnumpy()
- *        [[  1.78322066e-02   1.46375655e-03   5.38485940e-04   6.56010211e-03
- *        [  6.56221947e-03   5.95310994e-04   9.73919690e-01   1.78379621e-02
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/softmax_activation.cc:L59
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \param mode Specifies how to compute the softmax. If set to ``instance``, it computes
- *        softmax for each instance. If set to ``channel``, It computes cross channel
- * \return new symbol
- */
-inline Symbol SoftmaxActivation(const std::string& symbol_name,
-                                Symbol data,
-                                SoftmaxActivationMode mode = SoftmaxActivationMode::kInstance) {
-  static const char *SoftmaxActivationModeValues[] = {
-    "channel",
-    "instance"
-  };
-  return Operator("SoftmaxActivation")
-           .SetParam("mode", SoftmaxActivationModeValues[int(mode)])
            .SetInput("data", data)
            .CreateSymbol(symbol_name);
 }
@@ -1836,21 +1437,19 @@ enum class SoftminDtype {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/softmin.cc:L57
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/softmax.cc:L153
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \param axis The axis along which to compute softmax.
  * \param temperature Temperature parameter in softmax
  * \param dtype DType of the output in case this can't be inferred. Defaults to the same
- * \param use_length Whether to use the length input as a mask over the data input.
  * \return new symbol
  */
 inline Symbol softmin(const std::string& symbol_name,
                       Symbol data,
                       int axis = -1,
                       dmlc::optional<double> temperature = dmlc::optional<double>(),
-                      SoftminDtype dtype = SoftminDtype::kNone,
-                      dmlc::optional<bool> use_length = dmlc::optional<bool>(0)) {
+                      SoftminDtype dtype = SoftminDtype::kNone) {
   static const char *SoftminDtypeValues[] = {
     "None",
     "float16",
@@ -1861,7 +1460,113 @@ inline Symbol softmin(const std::string& symbol_name,
            .SetParam("axis", axis)
            .SetParam("temperature", temperature)
            .SetParam("dtype", SoftminDtypeValues[int(dtype)])
-           .SetParam("use_length", use_length)
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*! \brief DType of the output in case this can't be inferred. Defaults to the same as
+ */
+enum class Log_softmaxDtype {
+  kNone = 0,
+  kFloat16 = 1,
+  kFloat32 = 2,
+  kFloat64 = 3
+};
+
+/*!
+ * \brief Computes the log softmax of the input.
+ *        This is equivalent to computing softmax followed by log.
+ *
+ *        Examples::
+ *
+ *        >>> x = mx.nd.array([1, 2, .1])
+ *        >>> mx.nd.log_softmax(x).asnumpy()
+ *        array([-1.41702998, -0.41702995, -2.31702995], dtype=float32)
+ *
+ *        >>> x = mx.nd.array( [[1, 2, .1],[.1, 2, 1]] )
+ *        >>> mx.nd.log_softmax(x, axis=0).asnumpy()
+ *        array([[-0.34115392, -0.69314718, -1.24115396],
+ *        [-1.24115396, -0.69314718, -0.34115392]], dtype=float32)
+ *
+ *
+ *
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \param axis The axis along which to compute softmax.
+ * \param temperature Temperature parameter in softmax
+ * \param dtype DType of the output in case this can't be inferred. Defaults to the same
+ * \return new symbol
+ */
+inline Symbol log_softmax(const std::string& symbol_name,
+                          Symbol data,
+                          int axis = -1,
+                          dmlc::optional<double> temperature = dmlc::optional<double>(),
+                          Log_softmaxDtype dtype = Log_softmaxDtype::kNone) {
+  static const char *Log_softmaxDtypeValues[] = {
+    "None",
+    "float16",
+    "float32",
+    "float64"
+  };
+  return Operator("log_softmax")
+           .SetParam("axis", axis)
+           .SetParam("temperature", temperature)
+           .SetParam("dtype", Log_softmaxDtypeValues[int(dtype)])
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*! \brief Specifies how to compute the softmax. If set to ``instance``, it computes
+ *        softmax for each instance. If set to ``channel``, It computes cross channel
+ */
+enum class SoftmaxActivationMode {
+  kChannel = 0,
+  kInstance = 1
+};
+
+/*!
+ * \brief Applies softmax activation to input. This is intended for internal layers.
+ *
+ *        .. note::
+ *
+ *        This operator has been deprecated, please use `softmax`.
+ *
+ *        If `mode` = ``instance``, this operator will compute a softmax for each
+ *        This is the default mode.
+ *
+ *        If `mode` = ``channel``, this operator will compute a k-class softmax at each
+ *        of each instance, where `k` = ``num_channel``. This mode can only be used when
+ *        has at least 3 dimensions.
+ *        This can be used for `fully convolutional network`, `image segmentation`, etc.
+ *
+ *        Example::
+ *
+ *        >>> input_array = mx.nd.array([[3., 0.5, -0.5, 2., 7.],
+ *        >>>                            [2., -.4, 7.,   3., 0.2]])
+ *        >>> softmax_act = mx.nd.SoftmaxActivation(input_array)
+ *        >>> print softmax_act.asnumpy()
+ *        [[  1.78322066e-02   1.46375655e-03   5.38485940e-04   6.56010211e-03
+ *        [  6.56221947e-03   5.95310994e-04   9.73919690e-01   1.78379621e-02
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/softmax_activation.cc:L59
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \param mode Specifies how to compute the softmax. If set to ``instance``, it computes
+ *        softmax for each instance. If set to ``channel``, It computes cross channel
+ * \return new symbol
+ */
+inline Symbol SoftmaxActivation(const std::string& symbol_name,
+                                Symbol data,
+                                SoftmaxActivationMode mode = SoftmaxActivationMode::kInstance) {
+  static const char *SoftmaxActivationModeValues[] = {
+    "channel",
+    "instance"
+  };
+  return Operator("SoftmaxActivation")
+           .SetParam("mode", SoftmaxActivationModeValues[int(mode)])
            .SetInput("data", data)
            .CreateSymbol(symbol_name);
 }
@@ -1934,7 +1639,7 @@ enum class UpSamplingMultiInputMode {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/upsampling.cc:L173
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/upsampling.cc:L173
  * \param symbol_name name of the resulting symbol
  * \param data Array of tensors to upsample. For bilinear upsampling, there should be 2
  * \param scale Up sampling scale
@@ -1992,7 +1697,7 @@ inline Symbol UpSampling(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L63
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L61
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2041,7 +1746,7 @@ inline Symbol signsgd_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L92
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L90
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2089,7 +1794,7 @@ inline Symbol signum_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L329
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L327
  * \param symbol_name name of the resulting symbol
  * \param data Weights
  * \param lrs Learning rates.
@@ -2140,7 +1845,7 @@ inline Symbol multi_sgd_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L374
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L372
  * \param symbol_name name of the resulting symbol
  * \param data Weights, gradients and momentum
  * \param lrs Learning rates.
@@ -2182,7 +1887,7 @@ inline Symbol multi_sgd_mom_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L417
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L415
  * \param symbol_name name of the resulting symbol
  * \param data Weights
  * \param lrs Learning rates.
@@ -2233,7 +1938,7 @@ inline Symbol multi_mp_sgd_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L472
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L470
  * \param symbol_name name of the resulting symbol
  * \param data Weights
  * \param lrs Learning rates.
@@ -2281,7 +1986,7 @@ inline Symbol multi_mp_sgd_mom_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L524
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L522
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2343,7 +2048,7 @@ inline Symbol sgd_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L565
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L563
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2476,7 +2181,7 @@ inline Symbol mp_sgd_mom_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L640
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L638
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2558,7 +2263,7 @@ inline Symbol ftml_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L688
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L686
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2622,7 +2327,7 @@ inline Symbol adam_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L726
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L724
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2662,7 +2367,7 @@ inline Symbol nag_mom_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L745
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L743
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2737,7 +2442,7 @@ inline Symbol mp_nag_mom_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L797
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L795
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2805,7 +2510,7 @@ inline Symbol rmsprop_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L836
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L834
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2880,7 +2585,7 @@ inline Symbol rmspropalex_update(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L876
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L874
  * \param symbol_name name of the resulting symbol
  * \param weight Weight
  * \param grad Gradient
@@ -2918,279 +2623,6 @@ inline Symbol ftrl_update(const std::string& symbol_name,
            .SetInput("grad", grad)
            .SetInput("z", z)
            .SetInput("n", n)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Phase I of lamb update it performs the following operations and returns g:.
- *
- *        Link to paper: https://arxiv.org/pdf/1904.00962.pdf
- *
- *        .. math::
- *        \begin{gather*}
- *        grad = grad * rescale_grad
- *        if (grad < -clip_gradient)
- *        then
- *        grad = -clip_gradient
- *        if (grad > clip_gradient)
- *        then
- *        grad = clip_gradient
- *
- *        mean = beta1 * mean + (1 - beta1) * grad;
- *        variance = beta2 * variance + (1. - beta2) * grad ^ 2;
- *
- *        if (bias_correction)
- *        then
- *        mean_hat = mean / (1. - beta1^t);
- *        var_hat = var / (1 - beta2^t);
- *        g = mean_hat / (var_hat^(1/2) + epsilon) + wd * weight;
- *        else
- *        g = mean / (var_data^(1/2) + epsilon) + wd * weight;
- *        \end{gather*}
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L953
- * \param symbol_name name of the resulting symbol
- * \param weight Weight
- * \param grad Gradient
- * \param mean Moving mean
- * \param var Moving variance
- * \param t Index update count.
- * \param wd Weight decay augments the objective function with a regularization term that
- *        penalizes large weights. The penalty scales with the square of the magnitude of
- * \param beta1 The decay rate for the 1st moment estimates.
- * \param beta2 The decay rate for the 2nd moment estimates.
- * \param epsilon A small constant for numerical stability.
- * \param bias_correction Whether to use bias correction.
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \return new symbol
- */
-inline Symbol lamb_update_phase1(const std::string& symbol_name,
-                                 Symbol weight,
-                                 Symbol grad,
-                                 Symbol mean,
-                                 Symbol var,
-                                 int t,
-                                 mx_float wd,
-                                 mx_float beta1 = 0.899999976,
-                                 mx_float beta2 = 0.999000013,
-                                 mx_float epsilon = 9.99999997e-07,
-                                 bool bias_correction = true,
-                                 mx_float rescale_grad = 1,
-                                 mx_float clip_gradient = -1) {
-  return Operator("lamb_update_phase1")
-           .SetParam("t", t)
-           .SetParam("wd", wd)
-           .SetParam("beta1", beta1)
-           .SetParam("beta2", beta2)
-           .SetParam("epsilon", epsilon)
-           .SetParam("bias_correction", bias_correction)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetInput("weight", weight)
-           .SetInput("grad", grad)
-           .SetInput("mean", mean)
-           .SetInput("var", var)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Phase II of lamb update it performs the following operations and updates grad.
- *
- *        Link to paper: https://arxiv.org/pdf/1904.00962.pdf
- *
- *        .. math::
- *        \begin{gather*}
- *        if (lower_bound >= 0)
- *        then
- *        r1 = max(r1, lower_bound)
- *        if (upper_bound >= 0)
- *        then
- *        r1 = max(r1, upper_bound)
- *
- *        if (r1 == 0 or r2 == 0)
- *        then
- *        lr = lr
- *        else
- *        lr = lr * (r1/r2)
- *        weight = weight - lr * g
- *        \end{gather*}
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L992
- * \param symbol_name name of the resulting symbol
- * \param weight Weight
- * \param g Output of lamb_update_phase 1
- * \param r1 r1
- * \param r2 r2
- * \param lr Learning rate
- * \param lower_bound Lower limit of norm of weight. If lower_bound <= 0, Lower limit is
- * \param upper_bound Upper limit of norm of weight. If upper_bound <= 0, Upper limit is
- * \return new symbol
- */
-inline Symbol lamb_update_phase2(const std::string& symbol_name,
-                                 Symbol weight,
-                                 Symbol g,
-                                 Symbol r1,
-                                 Symbol r2,
-                                 mx_float lr,
-                                 mx_float lower_bound = -1,
-                                 mx_float upper_bound = -1) {
-  return Operator("lamb_update_phase2")
-           .SetParam("lr", lr)
-           .SetParam("lower_bound", lower_bound)
-           .SetParam("upper_bound", upper_bound)
-           .SetInput("weight", weight)
-           .SetInput("g", g)
-           .SetInput("r1", r1)
-           .SetInput("r2", r2)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Mixed Precision version of Phase I of lamb update
- *        it performs the following operations and returns g:.
- *
- *        Link to paper: https://arxiv.org/pdf/1904.00962.pdf
- *
- *        .. math::
- *        \begin{gather*}
- *        grad32 = grad(float16) * rescale_grad
- *        if (grad < -clip_gradient)
- *        then
- *        grad = -clip_gradient
- *        if (grad > clip_gradient)
- *        then
- *        grad = clip_gradient
- *
- *        mean = beta1 * mean + (1 - beta1) * grad;
- *        variance = beta2 * variance + (1. - beta2) * grad ^ 2;
- *
- *        if (bias_correction)
- *        then
- *        mean_hat = mean / (1. - beta1^t);
- *        var_hat = var / (1 - beta2^t);
- *        g = mean_hat / (var_hat^(1/2) + epsilon) + wd * weight32;
- *        else
- *        g = mean / (var_data^(1/2) + epsilon) + wd * weight32;
- *        \end{gather*}
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L1033
- * \param symbol_name name of the resulting symbol
- * \param weight Weight
- * \param grad Gradient
- * \param mean Moving mean
- * \param var Moving variance
- * \param weight32 Weight32
- * \param t Index update count.
- * \param wd Weight decay augments the objective function with a regularization term that
- *        penalizes large weights. The penalty scales with the square of the magnitude of
- * \param beta1 The decay rate for the 1st moment estimates.
- * \param beta2 The decay rate for the 2nd moment estimates.
- * \param epsilon A small constant for numerical stability.
- * \param bias_correction Whether to use bias correction.
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \return new symbol
- */
-inline Symbol mp_lamb_update_phase1(const std::string& symbol_name,
-                                    Symbol weight,
-                                    Symbol grad,
-                                    Symbol mean,
-                                    Symbol var,
-                                    Symbol weight32,
-                                    int t,
-                                    mx_float wd,
-                                    mx_float beta1 = 0.899999976,
-                                    mx_float beta2 = 0.999000013,
-                                    mx_float epsilon = 9.99999997e-07,
-                                    bool bias_correction = true,
-                                    mx_float rescale_grad = 1,
-                                    mx_float clip_gradient = -1) {
-  return Operator("mp_lamb_update_phase1")
-           .SetParam("t", t)
-           .SetParam("wd", wd)
-           .SetParam("beta1", beta1)
-           .SetParam("beta2", beta2)
-           .SetParam("epsilon", epsilon)
-           .SetParam("bias_correction", bias_correction)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetInput("weight", weight)
-           .SetInput("grad", grad)
-           .SetInput("mean", mean)
-           .SetInput("var", var)
-           .SetInput("weight32", weight32)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Mixed Precision version Phase II of lamb update
- *        it performs the following operations and updates grad.
- *
- *        Link to paper: https://arxiv.org/pdf/1904.00962.pdf
- *
- *        .. math::
- *        \begin{gather*}
- *        if (lower_bound >= 0)
- *        then
- *        r1 = max(r1, lower_bound)
- *        if (upper_bound >= 0)
- *        then
- *        r1 = max(r1, upper_bound)
- *
- *        if (r1 == 0 or r2 == 0)
- *        then
- *        lr = lr
- *        else
- *        lr = lr * (r1/r2)
- *        weight32 = weight32 - lr * g
- *        weight(float16) = weight32
- *        \end{gather*}
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L1075
- * \param symbol_name name of the resulting symbol
- * \param weight Weight
- * \param g Output of mp_lamb_update_phase 1
- * \param r1 r1
- * \param r2 r2
- * \param weight32 Weight32
- * \param lr Learning rate
- * \param lower_bound Lower limit of norm of weight. If lower_bound <= 0, Lower limit is
- * \param upper_bound Upper limit of norm of weight. If upper_bound <= 0, Upper limit is
- * \return new symbol
- */
-inline Symbol mp_lamb_update_phase2(const std::string& symbol_name,
-                                    Symbol weight,
-                                    Symbol g,
-                                    Symbol r1,
-                                    Symbol r2,
-                                    Symbol weight32,
-                                    mx_float lr,
-                                    mx_float lower_bound = -1,
-                                    mx_float upper_bound = -1) {
-  return Operator("mp_lamb_update_phase2")
-           .SetParam("lr", lr)
-           .SetParam("lower_bound", lower_bound)
-           .SetParam("upper_bound", upper_bound)
-           .SetInput("weight", weight)
-           .SetInput("g", g)
-           .SetInput("r1", r1)
-           .SetInput("r2", r2)
-           .SetInput("weight32", weight32)
            .CreateSymbol(symbol_name);
 }
 
@@ -3288,7 +2720,7 @@ enum class PadMode {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/pad.cc:L766
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/pad.cc:L766
  * \param symbol_name name of the resulting symbol
  * \param data An n-dimensional input array.
  * \param mode Padding type to use. "constant" pads with `constant_value` "edge" pads
@@ -3320,12 +2752,17 @@ inline Symbol Pad(const std::string& symbol_name,
 
 /*!
  * \brief Flattens the input array into a 2-D array by collapsing the higher dimensions.
+ *
  *        .. note:: `Flatten` is deprecated. Use `flatten` instead.
+ *
  *        For an input array with shape ``(d1, d2, ..., dk)``, `flatten` operation
  *        the input array into an output array of shape ``(d1, d2*...*dk)``.
- *        Note that the behavior of this function is different from numpy.ndarray.flatten,
+ *
+ *        Note that the bahavior of this function is different from numpy.ndarray.flatten,
  *        which behaves similar to mxnet.ndarray.reshape((-1,)).
+ *
  *        Example::
+ *
  *        x = [[
  *        [1,2,3],
  *        [4,5,6],
@@ -3335,12 +2772,14 @@ inline Symbol Pad(const std::string& symbol_name,
  *        [4,5,6],
  *        [7,8,9]
  *        ]],
+ *
  *        flatten(x) = [[ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.],
  *        [ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.]]
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L250
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L291
  * \param symbol_name name of the resulting symbol
  * \param data Input array.
  * \return new symbol
@@ -3375,7 +2814,7 @@ inline Symbol Flatten(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/regression_output.cc:L92
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/regression_output.cc:L92
  * \param symbol_name name of the resulting symbol
  * \param data Input data to the function.
  * \param label Input label to the function.
@@ -3417,7 +2856,7 @@ inline Symbol LinearRegressionOutput(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/regression_output.cc:L120
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/regression_output.cc:L120
  * \param symbol_name name of the resulting symbol
  * \param data Input data to the function.
  * \param label Input label to the function.
@@ -3465,7 +2904,7 @@ inline Symbol MAERegressionOutput(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/regression_output.cc:L152
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/regression_output.cc:L152
  * \param symbol_name name of the resulting symbol
  * \param data Input data to the function.
  * \param label Input label to the function.
@@ -3549,7 +2988,7 @@ enum class RNNMode {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/rnn.cc:L354
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/rnn.cc:L690
  * \param symbol_name name of the resulting symbol
  * \param data Input data to RNN
  * \param parameters Vector of all RNN trainable parameters concatenated
@@ -3608,170 +3047,6 @@ inline Symbol RNN(const std::string& symbol_name,
            .SetInput("parameters", parameters)
            .SetInput("state", state)
            .SetInput("state_cell", state_cell)
-           .SetInput("sequence_length", sequence_length)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Performs region of interest(ROI) pooling on the input array.
- *
- *        ROI pooling is a variant of a max pooling layer, in which the output size is
- *        region of interest is a parameter. Its purpose is to perform max pooling on the
- *        of non-uniform sizes to obtain fixed-size feature maps. ROI pooling is a
- *        layer mostly used in training a `Fast R-CNN` network for object detection.
- *
- *        This operator takes a 4D feature map as an input array and region proposals as
- *        then it pools over sub-regions of input and produces a fixed-sized output array
- *        regardless of the ROI size.
- *
- *        To crop the feature map accordingly, you can resize the bounding box coordinates
- *        by changing the parameters `rois` and `spatial_scale`.
- *
- *        The cropped feature maps are pooled by standard max pooling operation to a
- *        indicated by a `pooled_size` parameter. batch_size will change to the number of
- *        bounding boxes after `ROIPooling`.
- *
- *        The size of each region of interest doesn't have to be perfectly divisible by
- *        the number of pooling sections(`pooled_size`).
- *
- *        Example::
- *
- *        x = [[[[  0.,   1.,   2.,   3.,   4.,   5.],
- *        [  6.,   7.,   8.,   9.,  10.,  11.],
- *        [ 12.,  13.,  14.,  15.,  16.,  17.],
- *        [ 18.,  19.,  20.,  21.,  22.,  23.],
- *        [ 24.,  25.,  26.,  27.,  28.,  29.],
- *        [ 30.,  31.,  32.,  33.,  34.,  35.],
- *        [ 36.,  37.,  38.,  39.,  40.,  41.],
- *        [ 42.,  43.,  44.,  45.,  46.,  47.]]]]
- *
- *        // region of interest i.e. bounding box coordinates.
- *        y = [[0,0,0,4,4]]
- *
- *        // returns array of shape (2,2) according to the given roi with max pooling.
- *        ROIPooling(x, y, (2,2), 1.0) = [[[[ 14.,  16.],
- *        [ 26.,  28.]]]]
- *
- *        // region of interest is changed due to the change in `spacial_scale` parameter.
- *        ROIPooling(x, y, (2,2), 0.7) = [[[[  7.,   9.],
- *        [ 19.,  21.]]]]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/roi_pooling.cc:L225
- * \param symbol_name name of the resulting symbol
- * \param data The input array to the pooling operator,  a 4D Feature maps
- * \param rois Bounding box coordinates, a 2D array of [[batch_index, x1, y1, x2, y2]],
- *        where (x1, y1) and (x2, y2) are top left and bottom right corners of designated
- *        region of interest. `batch_index` indicates the index of corresponding image in
- * \param pooled_size ROI pooling output shape (h,w)
- * \param spatial_scale Ratio of input feature map height (or w) to raw image height (or
- * \return new symbol
- */
-inline Symbol ROIPooling(const std::string& symbol_name,
-                         Symbol data,
-                         Symbol rois,
-                         Shape pooled_size,
-                         mx_float spatial_scale) {
-  return Operator("ROIPooling")
-           .SetParam("pooled_size", pooled_size)
-           .SetParam("spatial_scale", spatial_scale)
-           .SetInput("data", data)
-           .SetInput("rois", rois)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Sets all elements outside the sequence to a constant value.
- *
- *        This function takes an n-dimensional input array of the form
- *        [max_sequence_length, batch_size, other_feature_dims] and returns an array of
- *
- *        Parameter `sequence_length` is used to handle variable-length sequences.
- *        should be an input array of positive ints of dimension [batch_size].
- *        To use this parameter, set `use_sequence_length` to `True`,
- *        otherwise each example in the batch is assumed to have the max sequence length
- *        this operator works as the `identity` operator.
- *
- *        Example::
- *
- *        x = [[[  1.,   2.,   3.],
- *        [  4.,   5.,   6.]],
- *
- *        [[  7.,   8.,   9.],
- *        [ 10.,  11.,  12.]],
- *
- *        [[ 13.,  14.,   15.],
- *        [ 16.,  17.,   18.]]]
- *
- *        // Batch 1
- *        B1 = [[  1.,   2.,   3.],
- *        [  7.,   8.,   9.],
- *        [ 13.,  14.,  15.]]
- *
- *        // Batch 2
- *        B2 = [[  4.,   5.,   6.],
- *        [ 10.,  11.,  12.],
- *        [ 16.,  17.,  18.]]
- *
- *        // works as identity operator when sequence_length parameter is not used
- *        SequenceMask(x) = [[[  1.,   2.,   3.],
- *        [  4.,   5.,   6.]],
- *
- *        [[  7.,   8.,   9.],
- *        [ 10.,  11.,  12.]],
- *
- *        [[ 13.,  14.,   15.],
- *        [ 16.,  17.,   18.]]]
- *
- *        // sequence_length [1,1] means 1 of each batch will be kept
- *        // and other rows are masked with default mask value = 0
- *        SequenceMask(x, sequence_length=[1,1], use_sequence_length=True) =
- *        [[[  1.,   2.,   3.],
- *        [  4.,   5.,   6.]],
- *
- *        [[  0.,   0.,   0.],
- *        [  0.,   0.,   0.]],
- *
- *        [[  0.,   0.,   0.],
- *        [  0.,   0.,   0.]]]
- *
- *        // sequence_length [2,3] means 2 of batch B1 and 3 of batch B2 will be kept
- *        // and other rows are masked with value = 1
- *        SequenceMask(x, sequence_length=[2,3], use_sequence_length=True, value=1) =
- *        [[[  1.,   2.,   3.],
- *        [  4.,   5.,   6.]],
- *
- *        [[  7.,   8.,   9.],
- *        [  10.,  11.,  12.]],
- *
- *        [[   1.,   1.,   1.],
- *        [  16.,  17.,  18.]]]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/sequence_mask.cc:L186
- * \param symbol_name name of the resulting symbol
- * \param data n-dimensional input array of the form [max_sequence_length, batch_size,
- * \param sequence_length vector of sequence lengths of the form [batch_size]
- * \param use_sequence_length If set to true, this layer takes in an extra input
- * \param value The value to be used as a mask.
- * \param axis The sequence axis. Only values of 0 and 1 are currently supported.
- * \return new symbol
- */
-inline Symbol SequenceMask(const std::string& symbol_name,
-                           Symbol data,
-                           Symbol sequence_length,
-                           bool use_sequence_length = false,
-                           mx_float value = 0,
-                           int axis = 0) {
-  return Operator("SequenceMask")
-           .SetParam("use_sequence_length", use_sequence_length)
-           .SetParam("value", value)
-           .SetParam("axis", axis)
-           .SetInput("data", data)
            .SetInput("sequence_length", sequence_length)
            .CreateSymbol(symbol_name);
 }
@@ -3838,7 +3113,7 @@ inline Symbol SequenceMask(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/slice_channel.cc:L107
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/slice_channel.cc:L107
  * \param symbol_name name of the resulting symbol
  * \param data The input
  * \param num_outputs Number of splits. Note that this should evenly divide the length of
@@ -3948,7 +3223,7 @@ enum class SoftmaxOutputNormalization {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/softmax_output.cc:L231
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/softmax_output.cc:L230
  * \param symbol_name name of the resulting symbol
  * \param data Input array.
  * \param label Ground truth label.
@@ -4017,7 +3292,7 @@ inline Symbol SoftmaxOutput(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/swapaxis.cc:L70
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/swapaxis.cc:L70
  * \param symbol_name name of the resulting symbol
  * \param data Input array.
  * \param dim1 the first axis to be swapped.
@@ -4026,8 +3301,8 @@ inline Symbol SoftmaxOutput(const std::string& symbol_name,
  */
 inline Symbol SwapAxis(const std::string& symbol_name,
                        Symbol data,
-                       int dim1 = 0,
-                       int dim2 = 0) {
+                       uint32_t dim1 = 0,
+                       uint32_t dim2 = 0) {
   return Operator("SwapAxis")
            .SetParam("dim1", dim1)
            .SetParam("dim2", dim2)
@@ -4054,7 +3329,7 @@ enum class Amp_castDtype {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/amp_cast.cc:L37
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/amp_cast.cc:L37
  * \param symbol_name name of the resulting symbol
  * \param data The input.
  * \param dtype Output data type.
@@ -4086,178 +3361,18 @@ inline Symbol amp_cast(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/amp_cast.cc:L71
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/amp_cast.cc:L71
  * \param symbol_name name of the resulting symbol
  * \param data Weights
  * \param num_outputs Number of input/output pairs to be casted to the widest type.
- * \param cast_narrow Whether to cast to the narrowest type
  * \return new symbol
  */
 inline Symbol amp_multicast(const std::string& symbol_name,
                             const std::vector<Symbol>& data,
-                            int num_outputs,
-                            bool cast_narrow = false) {
+                            int num_outputs) {
   return Operator("amp_multicast")
            .SetParam("num_outputs", num_outputs)
-           .SetParam("cast_narrow", cast_narrow)
 (data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Computes the max of array elements over given axes.
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/./broadcast_reduce_op.h:L32
- * \param symbol_name name of the resulting symbol
- * \param data The input
- * \param axis The axis or axes along which to perform the reduction.
- *
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *
- *        If `axis` is int, a reduction is performed on a particular axis.
- *
- *        If `axis` is a tuple of ints, a reduction is performed on all the axes
- *        specified in the tuple.
- *
- *        If `exclude` is true, reduction will be performed on the axes that are
- *        NOT in axis instead.
- *
- *        Negative values means indexing from right to left.
- * \param keepdims If this is set to `True`, the reduced axes are left in the result as
- * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
- * \return new symbol
- */
-inline Symbol max(const std::string& symbol_name,
-                  Symbol data,
-                  dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                  bool keepdims = false,
-                  bool exclude = false) {
-  return Operator("max")
-           .SetParam("axis", axis)
-           .SetParam("keepdims", keepdims)
-           .SetParam("exclude", exclude)
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Computes the min of array elements over given axes.
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/./broadcast_reduce_op.h:L47
- * \param symbol_name name of the resulting symbol
- * \param data The input
- * \param axis The axis or axes along which to perform the reduction.
- *
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *
- *        If `axis` is int, a reduction is performed on a particular axis.
- *
- *        If `axis` is a tuple of ints, a reduction is performed on all the axes
- *        specified in the tuple.
- *
- *        If `exclude` is true, reduction will be performed on the axes that are
- *        NOT in axis instead.
- *
- *        Negative values means indexing from right to left.
- * \param keepdims If this is set to `True`, the reduced axes are left in the result as
- * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
- * \return new symbol
- */
-inline Symbol min(const std::string& symbol_name,
-                  Symbol data,
-                  dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                  bool keepdims = false,
-                  bool exclude = false) {
-  return Operator("min")
-           .SetParam("axis", axis)
-           .SetParam("keepdims", keepdims)
-           .SetParam("exclude", exclude)
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*! \brief The data type of the output.
- */
-enum class NormOutDtype {
-  kNone = 0,
-  kFloat16 = 1,
-  kFloat32 = 2,
-  kFloat64 = 3,
-  kInt32 = 4,
-  kInt64 = 5,
-  kInt8 = 6
-};
-
-/*!
- * \brief Computes the norm on an NDArray.
- *
- *        This operator computes the norm on an NDArray with the specified axis, depending
- *        on the value of the ord parameter. By default, it computes the L2 norm on the
- *        array. Currently only ord=2 supports sparse ndarrays.
- *
- *        Examples::
- *
- *        x = [[[1, 2],
- *        [3, 4]],
- *        [[2, 2],
- *        [5, 6]]]
- *
- *        norm(x, ord=2, axis=1) = [[3.1622777 4.472136 ]
- *        [5.3851647 6.3245554]]
- *
- *        norm(x, ord=1, axis=1) = [[4., 6.],
- *        [7., 8.]]
- *
- *        rsp = x.cast_storage('row_sparse')
- *
- *        norm(rsp) = [5.47722578]
- *
- *        csr = x.cast_storage('csr')
- *
- *        norm(csr) = [5.47722578]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_norm_value.cc:L89
- * \param symbol_name name of the resulting symbol
- * \param data The input
- * \param ord Order of the norm. Currently ord=1 and ord=2 is supported.
- * \param axis The axis or axes along which to perform the reduction.
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *        If `axis` is int, a reduction is performed on a particular axis.
- *        If `axis` is a 2-tuple, it specifies the axes that hold 2-D matrices,
- *        and the matrix norms of these matrices are computed.
- * \param out_dtype The data type of the output.
- * \param keepdims If this is set to `True`, the reduced axis is left in the result as
- * \return new symbol
- */
-inline Symbol norm(const std::string& symbol_name,
-                   Symbol data,
-                   int ord = 2,
-                   dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                   NormOutDtype out_dtype = NormOutDtype::kNone,
-                   bool keepdims = false) {
-  static const char *NormOutDtypeValues[] = {
-    "None",
-    "float16",
-    "float32",
-    "float64",
-    "int32",
-    "int64",
-    "int8"
-  };
-  return Operator("norm")
-           .SetParam("ord", ord)
-           .SetParam("axis", axis)
-           .SetParam("out_dtype", NormOutDtypeValues[int(out_dtype)])
-           .SetParam("keepdims", keepdims)
-           .SetInput("data", data)
            .CreateSymbol(symbol_name);
 }
 
@@ -4285,7 +3400,7 @@ inline Symbol norm(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L52
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L52
  * \param symbol_name name of the resulting symbol
  * \param data The input
  * \param axis The axis along which to perform the reduction. Negative values means
@@ -4328,7 +3443,7 @@ inline Symbol argmax(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L77
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L77
  * \param symbol_name name of the resulting symbol
  * \param data The input
  * \param axis The axis along which to perform the reduction. Negative values means
@@ -4365,7 +3480,7 @@ inline Symbol argmin(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L97
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L97
  * \param symbol_name name of the resulting symbol
  * \param data The input array
  * \return new symbol
@@ -4431,7 +3546,7 @@ enum class PickMode {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L155
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L154
  * \param symbol_name name of the resulting symbol
  * \param data The input array
  * \param index The index array
@@ -4459,207 +3574,6 @@ inline Symbol pick(const std::string& symbol_name,
            .SetParam("mode", PickModeValues[int(mode)])
            .SetInput("data", data)
            .SetInput("index", index)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Broadcasts the input array over particular axes.
- *
- *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
- *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
- *
- *        `broadcast_axes` is an alias to the function `broadcast_axis`.
- *
- *        Example::
- *
- *        // given x of shape (1,2,1)
- *        x = [[[ 1.],
- *        [ 2.]]]
- *
- *        // broadcast x on on axis 2
- *        broadcast_axis(x, axis=2, size=3) = [[[ 1.,  1.,  1.],
- *        [ 2.,  2.,  2.]]]
- *        // broadcast x on on axes 0 and 2
- *        broadcast_axis(x, axis=(0,2), size=(2,3)) = [[[ 1.,  1.,  1.],
- *        [ 2.,  2.,  2.]],
- *        [[ 1.,  1.,  1.],
- *        [ 2.,  2.,  2.]]]
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L58
- * \param symbol_name name of the resulting symbol
- * \param data The input
- * \param axis The axes to perform the broadcasting.
- * \param size Target sizes of the broadcasting axes.
- * \return new symbol
- */
-inline Symbol broadcast_axis(const std::string& symbol_name,
-                             Symbol data,
-                             Shape axis = Shape(),
-                             Shape size = Shape()) {
-  return Operator("broadcast_axis")
-           .SetParam("axis", axis)
-           .SetParam("size", size)
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Broadcasts the input array to a new shape.
- *
- *        Broadcasting is a mechanism that allows NDArrays to perform arithmetic
- *        with arrays of different shapes efficiently without creating multiple copies of
- *        Also see, `Broadcasting
- *        <https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_ for more
- *
- *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
- *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
- *
- *        For example::
- *
- *        broadcast_to([[1,2,3]], shape=(2,3)) = [[ 1.,  2.,  3.],
- *        [ 1.,  2.,  3.]])
- *
- *        The dimension which you do not want to change can also be kept as `0` which
- *        So with `shape=(2,0)`, we will obtain the same result as in the above example.
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L82
- * \param symbol_name name of the resulting symbol
- * \param data The input
- * \param shape The shape of the desired array. We can set the dim to zero if it's same
- *        as the original. E.g `A = broadcast_to(B, shape=(10, 0, 0))` has the same
- * \return new symbol
- */
-inline Symbol broadcast_to(const std::string& symbol_name,
-                           Symbol data,
-                           Shape shape = Shape()) {
-  return Operator("broadcast_to")
-           .SetParam("shape", shape)
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Broadcasts lhs to have the same shape as rhs.
- *
- *        Broadcasting is a mechanism that allows NDArrays to perform arithmetic
- *        with arrays of different shapes efficiently without creating multiple copies of
- *        Also see, `Broadcasting
- *        <https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_ for more
- *
- *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
- *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
- *
- *        For example::
- *
- *        broadcast_like([[1,2,3]], [[5,6,7],[7,8,9]]) = [[ 1.,  2.,  3.],
- *        [ 1.,  2.,  3.]])
- *
- *        broadcast_like([9], [1,2,3,4,5], lhs_axes=(0,), rhs_axes=(-1,)) = [9,9,9,9,9]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L135
- * \param symbol_name name of the resulting symbol
- * \param lhs First input.
- * \param rhs Second input.
- * \param lhs_axes Axes to perform broadcast on in the first input array
- * \param rhs_axes Axes to copy from the second input array
- * \return new symbol
- */
-inline Symbol broadcast_like(const std::string& symbol_name,
-                             Symbol lhs,
-                             Symbol rhs,
-                             dmlc::optional<Shape> lhs_axes = dmlc::optional<Shape>(),
-                             dmlc::optional<Shape> rhs_axes = dmlc::optional<Shape>()) {
-  return Operator("broadcast_like")
-           .SetParam("lhs_axes", lhs_axes)
-           .SetParam("rhs_axes", rhs_axes)
-           .SetInput("lhs", lhs)
-           .SetInput("rhs", rhs)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Computes the product of array elements over given axes.
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/./broadcast_reduce_op.h:L31
- * \param symbol_name name of the resulting symbol
- * \param data The input
- * \param axis The axis or axes along which to perform the reduction.
- *
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *
- *        If `axis` is int, a reduction is performed on a particular axis.
- *
- *        If `axis` is a tuple of ints, a reduction is performed on all the axes
- *        specified in the tuple.
- *
- *        If `exclude` is true, reduction will be performed on the axes that are
- *        NOT in axis instead.
- *
- *        Negative values means indexing from right to left.
- * \param keepdims If this is set to `True`, the reduced axes are left in the result as
- * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
- * \return new symbol
- */
-inline Symbol prod(const std::string& symbol_name,
-                   Symbol data,
-                   dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                   bool keepdims = false,
-                   bool exclude = false) {
-  return Operator("prod")
-           .SetParam("axis", axis)
-           .SetParam("keepdims", keepdims)
-           .SetParam("exclude", exclude)
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Computes the product of array elements over given axes treating Not a Numbers
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_prod_value.cc:L47
- * \param symbol_name name of the resulting symbol
- * \param data The input
- * \param axis The axis or axes along which to perform the reduction.
- *
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *
- *        If `axis` is int, a reduction is performed on a particular axis.
- *
- *        If `axis` is a tuple of ints, a reduction is performed on all the axes
- *        specified in the tuple.
- *
- *        If `exclude` is true, reduction will be performed on the axes that are
- *        NOT in axis instead.
- *
- *        Negative values means indexing from right to left.
- * \param keepdims If this is set to `True`, the reduced axes are left in the result as
- * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
- * \return new symbol
- */
-inline Symbol nanprod(const std::string& symbol_name,
-                      Symbol data,
-                      dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                      bool keepdims = false,
-                      bool exclude = false) {
-  return Operator("nanprod")
-           .SetParam("axis", axis)
-           .SetParam("keepdims", keepdims)
-           .SetParam("exclude", exclude)
-           .SetInput("data", data)
            .CreateSymbol(symbol_name);
 }
 
@@ -4701,7 +3615,7 @@ inline Symbol nanprod(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_sum_value.cc:L67
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L116
  * \param symbol_name name of the resulting symbol
  * \param data The input
  * \param axis The axis or axes along which to perform the reduction.
@@ -4739,7 +3653,7 @@ inline Symbol sum(const std::string& symbol_name,
  * \brief Computes the mean of array elements over given axes.
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/./broadcast_reduce_op.h:L84
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L132
  * \param symbol_name name of the resulting symbol
  * \param data The input
  * \param axis The axis or axes along which to perform the reduction.
@@ -4774,12 +3688,50 @@ inline Symbol mean(const std::string& symbol_name,
 }
 
 /*!
+ * \brief Computes the product of array elements over given axes.
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L147
+ * \param symbol_name name of the resulting symbol
+ * \param data The input
+ * \param axis The axis or axes along which to perform the reduction.
+ *
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *
+ *        If `axis` is a tuple of ints, a reduction is performed on all the axes
+ *        specified in the tuple.
+ *
+ *        If `exclude` is true, reduction will be performed on the axes that are
+ *        NOT in axis instead.
+ *
+ *        Negative values means indexing from right to left.
+ * \param keepdims If this is set to `True`, the reduced axes are left in the result as
+ * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
+ * \return new symbol
+ */
+inline Symbol prod(const std::string& symbol_name,
+                   Symbol data,
+                   dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                   bool keepdims = false,
+                   bool exclude = false) {
+  return Operator("prod")
+           .SetParam("axis", axis)
+           .SetParam("keepdims", keepdims)
+           .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
  * \brief Computes the sum of array elements over given axes treating Not a Numbers
  *
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_sum_value.cc:L102
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L162
  * \param symbol_name name of the resulting symbol
  * \param data The input
  * \param axis The axis or axes along which to perform the reduction.
@@ -4809,6 +3761,324 @@ inline Symbol nansum(const std::string& symbol_name,
            .SetParam("axis", axis)
            .SetParam("keepdims", keepdims)
            .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Computes the product of array elements over given axes treating Not a Numbers
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L177
+ * \param symbol_name name of the resulting symbol
+ * \param data The input
+ * \param axis The axis or axes along which to perform the reduction.
+ *
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *
+ *        If `axis` is a tuple of ints, a reduction is performed on all the axes
+ *        specified in the tuple.
+ *
+ *        If `exclude` is true, reduction will be performed on the axes that are
+ *        NOT in axis instead.
+ *
+ *        Negative values means indexing from right to left.
+ * \param keepdims If this is set to `True`, the reduced axes are left in the result as
+ * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
+ * \return new symbol
+ */
+inline Symbol nanprod(const std::string& symbol_name,
+                      Symbol data,
+                      dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                      bool keepdims = false,
+                      bool exclude = false) {
+  return Operator("nanprod")
+           .SetParam("axis", axis)
+           .SetParam("keepdims", keepdims)
+           .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Computes the max of array elements over given axes.
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L191
+ * \param symbol_name name of the resulting symbol
+ * \param data The input
+ * \param axis The axis or axes along which to perform the reduction.
+ *
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *
+ *        If `axis` is a tuple of ints, a reduction is performed on all the axes
+ *        specified in the tuple.
+ *
+ *        If `exclude` is true, reduction will be performed on the axes that are
+ *        NOT in axis instead.
+ *
+ *        Negative values means indexing from right to left.
+ * \param keepdims If this is set to `True`, the reduced axes are left in the result as
+ * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
+ * \return new symbol
+ */
+inline Symbol max(const std::string& symbol_name,
+                  Symbol data,
+                  dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                  bool keepdims = false,
+                  bool exclude = false) {
+  return Operator("max")
+           .SetParam("axis", axis)
+           .SetParam("keepdims", keepdims)
+           .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Computes the min of array elements over given axes.
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L205
+ * \param symbol_name name of the resulting symbol
+ * \param data The input
+ * \param axis The axis or axes along which to perform the reduction.
+ *
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *
+ *        If `axis` is a tuple of ints, a reduction is performed on all the axes
+ *        specified in the tuple.
+ *
+ *        If `exclude` is true, reduction will be performed on the axes that are
+ *        NOT in axis instead.
+ *
+ *        Negative values means indexing from right to left.
+ * \param keepdims If this is set to `True`, the reduced axes are left in the result as
+ * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
+ * \return new symbol
+ */
+inline Symbol min(const std::string& symbol_name,
+                  Symbol data,
+                  dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                  bool keepdims = false,
+                  bool exclude = false) {
+  return Operator("min")
+           .SetParam("axis", axis)
+           .SetParam("keepdims", keepdims)
+           .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Broadcasts the input array over particular axes.
+ *
+ *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
+ *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
+ *
+ *        Example::
+ *
+ *        // given x of shape (1,2,1)
+ *        x = [[[ 1.],
+ *        [ 2.]]]
+ *
+ *        // broadcast x on on axis 2
+ *        broadcast_axis(x, axis=2, size=3) = [[[ 1.,  1.,  1.],
+ *        [ 2.,  2.,  2.]]]
+ *        // broadcast x on on axes 0 and 2
+ *        broadcast_axis(x, axis=(0,2), size=(2,3)) = [[[ 1.,  1.,  1.],
+ *        [ 2.,  2.,  2.]],
+ *        [[ 1.,  1.,  1.],
+ *        [ 2.,  2.,  2.]]]
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L238
+ * \param symbol_name name of the resulting symbol
+ * \param data The input
+ * \param axis The axes to perform the broadcasting.
+ * \param size Target sizes of the broadcasting axes.
+ * \return new symbol
+ */
+inline Symbol broadcast_axis(const std::string& symbol_name,
+                             Symbol data,
+                             Shape axis = Shape(),
+                             Shape size = Shape()) {
+  return Operator("broadcast_axis")
+           .SetParam("axis", axis)
+           .SetParam("size", size)
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Broadcasts the input array to a new shape.
+ *
+ *        Broadcasting is a mechanism that allows NDArrays to perform arithmetic
+ *        with arrays of different shapes efficiently without creating multiple copies of
+ *        Also see, `Broadcasting
+ *        <https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_ for more
+ *
+ *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
+ *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
+ *
+ *        For example::
+ *
+ *        broadcast_to([[1,2,3]], shape=(2,3)) = [[ 1.,  2.,  3.],
+ *        [ 1.,  2.,  3.]])
+ *
+ *        The dimension which you do not want to change can also be kept as `0` which
+ *        So with `shape=(2,0)`, we will obtain the same result as in the above example.
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L262
+ * \param symbol_name name of the resulting symbol
+ * \param data The input
+ * \param shape The shape of the desired array. We can set the dim to zero if it's same
+ *        as the original. E.g `A = broadcast_to(B, shape=(10, 0, 0))` has the same
+ * \return new symbol
+ */
+inline Symbol broadcast_to(const std::string& symbol_name,
+                           Symbol data,
+                           Shape shape = Shape()) {
+  return Operator("broadcast_to")
+           .SetParam("shape", shape)
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Broadcasts lhs to have the same shape as rhs.
+ *
+ *        Broadcasting is a mechanism that allows NDArrays to perform arithmetic
+ *        with arrays of different shapes efficiently without creating multiple copies of
+ *        Also see, `Broadcasting
+ *        <https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_ for more
+ *
+ *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
+ *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
+ *
+ *        For example::
+ *
+ *        broadcast_like([[1,2,3]], [[5,6,7],[7,8,9]]) = [[ 1.,  2.,  3.],
+ *        [ 1.,  2.,  3.]])
+ *
+ *        broadcast_like([9], [1,2,3,4,5], lhs_axes=(0,), rhs_axes=(-1,)) = [9,9,9,9,9]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L315
+ * \param symbol_name name of the resulting symbol
+ * \param lhs First input.
+ * \param rhs Second input.
+ * \param lhs_axes Axes to perform broadcast on in the first input array
+ * \param rhs_axes Axes to copy from the second input array
+ * \return new symbol
+ */
+inline Symbol broadcast_like(const std::string& symbol_name,
+                             Symbol lhs,
+                             Symbol rhs,
+                             dmlc::optional<Shape> lhs_axes = dmlc::optional<Shape>(),
+                             dmlc::optional<Shape> rhs_axes = dmlc::optional<Shape>()) {
+  return Operator("broadcast_like")
+           .SetParam("lhs_axes", lhs_axes)
+           .SetParam("rhs_axes", rhs_axes)
+           .SetInput("lhs", lhs)
+           .SetInput("rhs", rhs)
+           .CreateSymbol(symbol_name);
+}
+
+/*! \brief The data type of the output.
+ */
+enum class NormOutDtype {
+  kNone = 0,
+  kFloat16 = 1,
+  kFloat32 = 2,
+  kFloat64 = 3,
+  kInt32 = 4,
+  kInt64 = 5,
+  kInt8 = 6
+};
+
+/*!
+ * \brief Computes the norm on an NDArray.
+ *
+ *        This operator computes the norm on an NDArray with the specified axis, depending
+ *        on the value of the ord parameter. By default, it computes the L2 norm on the
+ *        array. Currently only ord=2 supports sparse ndarrays.
+ *
+ *        Examples::
+ *
+ *        x = [[[1, 2],
+ *        [3, 4]],
+ *        [[2, 2],
+ *        [5, 6]]]
+ *
+ *        norm(x, ord=2, axis=1) = [[3.1622777 4.472136 ]
+ *        [5.3851647 6.3245554]]
+ *
+ *        norm(x, ord=1, axis=1) = [[4., 6.],
+ *        [7., 8.]]
+ *
+ *        rsp = x.cast_storage('row_sparse')
+ *
+ *        norm(rsp) = [5.47722578]
+ *
+ *        csr = x.cast_storage('csr')
+ *
+ *        norm(csr) = [5.47722578]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L350
+ * \param symbol_name name of the resulting symbol
+ * \param data The input
+ * \param ord Order of the norm. Currently ord=1 and ord=2 is supported.
+ * \param axis The axis or axes along which to perform the reduction.
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *        If `axis` is a 2-tuple, it specifies the axes that hold 2-D matrices,
+ *        and the matrix norms of these matrices are computed.
+ * \param out_dtype The data type of the output.
+ * \param keepdims If this is set to `True`, the reduced axis is left in the result as
+ * \return new symbol
+ */
+inline Symbol norm(const std::string& symbol_name,
+                   Symbol data,
+                   int ord = 2,
+                   dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                   NormOutDtype out_dtype = NormOutDtype::kNone,
+                   bool keepdims = false) {
+  static const char *NormOutDtypeValues[] = {
+    "None",
+    "float16",
+    "float32",
+    "float64",
+    "int32",
+    "int64",
+    "int8"
+  };
+  return Operator("norm")
+           .SetParam("ord", ord)
+           .SetParam("axis", axis)
+           .SetParam("out_dtype", NormOutDtypeValues[int(out_dtype)])
+           .SetParam("keepdims", keepdims)
            .SetInput("data", data)
            .CreateSymbol(symbol_name);
 }
@@ -4861,7 +4131,7 @@ enum class Cast_storageStype {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/cast_storage.cc:L71
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/cast_storage.cc:L71
  * \param symbol_name name of the resulting symbol
  * \param data The input.
  * \param stype Output storage type.
@@ -4910,7 +4180,7 @@ inline Symbol cast_storage(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/control_flow_op.cc:L57
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/control_flow_op.cc:L57
  * \param symbol_name name of the resulting symbol
  * \param condition condition array
  * \param x
@@ -4984,7 +4254,7 @@ inline Symbol where(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/diag_op.cc:L87
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/diag_op.cc:L87
  * \param symbol_name name of the resulting symbol
  * \param data Input ndarray
  * \param k Diagonal in question. The default is 0. Use k>0 for diagonals above the main
@@ -5065,7 +4335,7 @@ enum class DotForwardStype {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/dot.cc:L77
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/dot.cc:L77
  * \param symbol_name name of the resulting symbol
  * \param lhs The first input
  * \param rhs The second input
@@ -5112,18 +4382,18 @@ enum class Batch_dotForwardStype {
  * \brief Batchwise dot product.
  *
  *        ``batch_dot`` is used to compute dot product of ``x`` and ``y`` when ``x`` and
- *        ``y`` are data in batch, namely N-D (N >= 3) arrays in shape of `(B0, ..., B_i,
+ *        ``y`` are data in batch, namely 3D arrays in shape of `(batch_size, :, :)`.
  *
- *        For example, given ``x`` with shape `(B_0, ..., B_i, N, M)` and ``y`` with shape
- *        `(B_0, ..., B_i, M, K)`, the result array will have shape `(B_0, ..., B_i, N,
+ *        For example, given ``x`` with shape `(batch_size, n, m)` and ``y`` with shape
+ *        `(batch_size, m, k)`, the result array will have shape `(batch_size, n, k)`,
  *        which is computed by::
  *
- *        batch_dot(x,y)[b_0, ..., b_i, :, :] = dot(x[b_0, ..., b_i, :, :], y[b_0, ...,
+ *        batch_dot(x,y)[i,:,:] = dot(x[i,:,:], y[i,:,:])
  *
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/dot.cc:L127
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/dot.cc:L125
  * \param symbol_name name of the resulting symbol
  * \param lhs The first input
  * \param rhs The second input
@@ -5182,7 +4452,7 @@ inline Symbol batch_dot(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L58
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L58
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5224,7 +4494,7 @@ inline Symbol broadcast_add(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L106
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L106
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5260,7 +4530,7 @@ inline Symbol broadcast_sub(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L146
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L146
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5296,7 +4566,7 @@ inline Symbol broadcast_mul(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L187
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L187
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5328,7 +4598,7 @@ inline Symbol broadcast_div(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L222
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L222
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5360,7 +4630,7 @@ inline Symbol broadcast_mod(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L45
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L45
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5394,7 +4664,7 @@ inline Symbol broadcast_power(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L81
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L80
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5428,7 +4698,7 @@ inline Symbol broadcast_maximum(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L117
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L115
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5468,7 +4738,7 @@ inline Symbol broadcast_minimum(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L158
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L156
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5500,7 +4770,7 @@ inline Symbol broadcast_hypot(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L46
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L46
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5532,7 +4802,7 @@ inline Symbol broadcast_equal(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L64
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L64
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5564,7 +4834,7 @@ inline Symbol broadcast_not_equal(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L82
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L82
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5596,7 +4866,7 @@ inline Symbol broadcast_greater(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L100
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L100
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5628,7 +4898,7 @@ inline Symbol broadcast_greater_equal(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L118
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L118
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5660,7 +4930,7 @@ inline Symbol broadcast_lesser(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L136
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L136
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5692,7 +4962,7 @@ inline Symbol broadcast_lesser_equal(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L154
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L154
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5724,7 +4994,7 @@ inline Symbol broadcast_logical_and(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L172
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L172
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5756,7 +5026,7 @@ inline Symbol broadcast_logical_or(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L190
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L190
  * \param symbol_name name of the resulting symbol
  * \param lhs First input to the function
  * \param rhs Second input to the function
@@ -5895,7 +5165,7 @@ inline Symbol elemwise_div(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_scalar_op_extended.cc:L108
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_scalar_op_extended.cc:L104
  * \param symbol_name name of the resulting symbol
  * \param data source input
  * \param scalar scalar input
@@ -5928,7 +5198,7 @@ inline Symbol smooth_l1(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_sum.cc:L155
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_sum.cc:L155
  * \param symbol_name name of the resulting symbol
  * \param args Positional input arguments
  * \return new symbol
@@ -5955,7 +5225,7 @@ inline Symbol add_n(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L85
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L85
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -5978,7 +5248,7 @@ inline Symbol relu(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L119
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L119
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -5999,7 +5269,7 @@ inline Symbol sigmoid(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L161
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L133
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \param alpha Slope of hard sigmoid
@@ -6028,7 +5298,7 @@ inline Symbol hard_sigmoid(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L191
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L163
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6069,7 +5339,7 @@ inline Symbol softsign(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L327
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L299
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6106,7 +5376,7 @@ inline Symbol BlockGrad(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L360
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L332
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6147,28 +5417,16 @@ inline Symbol make_loss(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L513
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L485
  * \param symbol_name name of the resulting symbol
  * \param lhs First input.
  * \param rhs Second input.
- * \param lhs_begin Defaults to 0. The beginning index along which the lhs dimensions are
- * \param lhs_end Defaults to None. The ending index along which the lhs dimensions are
- * \param rhs_begin Defaults to 0. The beginning index along which the rhs dimensions are
- * \param rhs_end Defaults to None. The ending index along which the rhs dimensions are
  * \return new symbol
  */
 inline Symbol reshape_like(const std::string& symbol_name,
                            Symbol lhs,
-                           Symbol rhs,
-                           dmlc::optional<int> lhs_begin = dmlc::optional<int>(),
-                           dmlc::optional<int> lhs_end = dmlc::optional<int>(),
-                           dmlc::optional<int> rhs_begin = dmlc::optional<int>(),
-                           dmlc::optional<int> rhs_end = dmlc::optional<int>()) {
+                           Symbol rhs) {
   return Operator("reshape_like")
-           .SetParam("lhs_begin", lhs_begin)
-           .SetParam("lhs_end", lhs_end)
-           .SetParam("rhs_begin", rhs_begin)
-           .SetParam("rhs_end", rhs_end)
            .SetInput("lhs", lhs)
            .SetInput("rhs", rhs)
            .CreateSymbol(symbol_name);
@@ -6184,14 +5442,26 @@ inline Symbol reshape_like(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L574
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L544
  * \param symbol_name name of the resulting symbol
  * \param data Input Array.
+ * \param lhs_begin Defaults to 0. The beginning index along which the lhs dimensions are
+ * \param lhs_end Defaults to None. The ending index along which the lhs dimensions are
+ * \param rhs_begin Defaults to 0. The beginning index along which the rhs dimensions are
+ * \param rhs_end Defaults to None. The ending index along which the rhs dimensions are
  * \return new symbol
  */
 inline Symbol shape_array(const std::string& symbol_name,
-                          Symbol data) {
+                          Symbol data,
+                          dmlc::optional<int> lhs_begin = dmlc::optional<int>(),
+                          dmlc::optional<int> lhs_end = dmlc::optional<int>(),
+                          dmlc::optional<int> rhs_begin = dmlc::optional<int>(),
+                          dmlc::optional<int> rhs_end = dmlc::optional<int>()) {
   return Operator("shape_array")
+           .SetParam("lhs_begin", lhs_begin)
+           .SetParam("lhs_end", lhs_end)
+           .SetParam("rhs_begin", rhs_begin)
+           .SetParam("rhs_end", rhs_end)
            .SetInput("data", data)
            .CreateSymbol(symbol_name);
 }
@@ -6206,7 +5476,7 @@ inline Symbol shape_array(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L625
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L596
  * \param symbol_name name of the resulting symbol
  * \param data Input Array.
  * \return new symbol
@@ -6221,14 +5491,13 @@ inline Symbol size_array(const std::string& symbol_name,
 /*! \brief Output data type.
  */
 enum class CastDtype {
-  kBool = 0,
-  kFloat16 = 1,
-  kFloat32 = 2,
-  kFloat64 = 3,
-  kInt32 = 4,
-  kInt64 = 5,
-  kInt8 = 6,
-  kUint8 = 7
+  kFloat16 = 0,
+  kFloat32 = 1,
+  kFloat64 = 2,
+  kInt32 = 3,
+  kInt64 = 4,
+  kInt8 = 5,
+  kUint8 = 6
 };
 
 /*!
@@ -6245,7 +5514,7 @@ enum class CastDtype {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L665
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L634
  * \param symbol_name name of the resulting symbol
  * \param data The input.
  * \param dtype Output data type.
@@ -6255,7 +5524,6 @@ inline Symbol Cast(const std::string& symbol_name,
                    Symbol data,
                    CastDtype dtype) {
   static const char *CastDtypeValues[] = {
-    "bool",
     "float16",
     "float32",
     "float64",
@@ -6292,6 +5560,30 @@ inline Symbol negative(const std::string& symbol_name,
 }
 
 /*!
+ * \brief Returns the reciprocal of the argument, element-wise.
+ *
+ *        Calculates 1/x.
+ *
+ *        Example::
+ *
+ *        reciprocal([-2, 1, 3, 1.6, 0.2]) = [-0.5, 1.0, 0.33333334, 0.625, 5.0]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L686
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol reciprocal(const std::string& symbol_name,
+                         Symbol data) {
+  return Operator("reciprocal")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
  * \brief Returns element-wise absolute value of the input.
  *
  *        Example::
@@ -6307,7 +5599,7 @@ inline Symbol negative(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L721
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L708
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6335,7 +5627,7 @@ inline Symbol abs(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L759
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L727
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6363,7 +5655,7 @@ inline Symbol sign(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L778
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L746
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6395,7 +5687,7 @@ inline Symbol round(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L799
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L767
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6425,7 +5717,7 @@ inline Symbol rint(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L818
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L786
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6455,7 +5747,7 @@ inline Symbol ceil(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L837
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L805
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6486,7 +5778,7 @@ inline Symbol floor(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L857
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L825
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6515,7 +5807,7 @@ inline Symbol trunc(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L875
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L843
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6523,6 +5815,126 @@ inline Symbol trunc(const std::string& symbol_name,
 inline Symbol fix(const std::string& symbol_name,
                   Symbol data) {
   return Operator("fix")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise squared value of the input.
+ *
+ *        .. math::
+ *        square(x) = x^2
+ *
+ *        Example::
+ *
+ *        square([2, 3, 4]) = [4, 9, 16]
+ *
+ *        The storage type of ``square`` output depends upon the input storage type:
+ *
+ *        - square(default) = default
+ *        - square(row_sparse) = row_sparse
+ *        - square(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L883
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol square(const std::string& symbol_name,
+                     Symbol data) {
+  return Operator("square")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise square-root value of the input.
+ *
+ *        .. math::
+ *        \textrm{sqrt}(x) = \sqrt{x}
+ *
+ *        Example::
+ *
+ *        sqrt([4, 9, 16]) = [2, 3, 4]
+ *
+ *        The storage type of ``sqrt`` output depends upon the input storage type:
+ *
+ *        - sqrt(default) = default
+ *        - sqrt(row_sparse) = row_sparse
+ *        - sqrt(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L907
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol sqrt(const std::string& symbol_name,
+                   Symbol data) {
+  return Operator("sqrt")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise inverse square-root value of the input.
+ *
+ *        .. math::
+ *        rsqrt(x) = 1/\sqrt{x}
+ *
+ *        Example::
+ *
+ *        rsqrt([4,9,16]) = [0.5, 0.33333334, 0.25]
+ *
+ *        The storage type of ``rsqrt`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L927
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol rsqrt(const std::string& symbol_name,
+                    Symbol data) {
+  return Operator("rsqrt")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise cube-root value of the input.
+ *
+ *        .. math::
+ *        cbrt(x) = \sqrt[3]{x}
+ *
+ *        Example::
+ *
+ *        cbrt([1, 8, -125]) = [1, 2, -5]
+ *
+ *        The storage type of ``cbrt`` output depends upon the input storage type:
+ *
+ *        - cbrt(default) = default
+ *        - cbrt(row_sparse) = row_sparse
+ *        - cbrt(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L950
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol cbrt(const std::string& symbol_name,
+                   Symbol data) {
+  return Operator("cbrt")
            .SetInput("data", data)
            .CreateSymbol(symbol_name);
 }
@@ -6537,7 +5949,7 @@ inline Symbol fix(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L886
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L964
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6559,7 +5971,7 @@ inline Symbol erf(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L907
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L985
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6567,6 +5979,177 @@ inline Symbol erf(const std::string& symbol_name,
 inline Symbol erfinv(const std::string& symbol_name,
                      Symbol data) {
   return Operator("erfinv")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise inverse cube-root value of the input.
+ *
+ *        .. math::
+ *        rcbrt(x) = 1/\sqrt[3]{x}
+ *
+ *        Example::
+ *
+ *        rcbrt([1,8,-125]) = [1.0, 0.5, -0.2]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1004
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol rcbrt(const std::string& symbol_name,
+                    Symbol data) {
+  return Operator("rcbrt")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise exponential value of the input.
+ *
+ *        .. math::
+ *        exp(x) = e^x \approx 2.718^x
+ *
+ *        Example::
+ *
+ *        exp([0, 1, 2]) = [1., 2.71828175, 7.38905621]
+ *
+ *        The storage type of ``exp`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1044
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol exp(const std::string& symbol_name,
+                  Symbol data) {
+  return Operator("exp")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise Natural logarithmic value of the input.
+ *
+ *        The natural logarithm is logarithm in base *e*, so that ``log(exp(x)) = x``
+ *
+ *        The storage type of ``log`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1057
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol log(const std::string& symbol_name,
+                  Symbol data) {
+  return Operator("log")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise Base-10 logarithmic value of the input.
+ *
+ *        ``10**log10(x) = x``
+ *
+ *        The storage type of ``log10`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1074
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol log10(const std::string& symbol_name,
+                    Symbol data) {
+  return Operator("log10")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise Base-2 logarithmic value of the input.
+ *
+ *        ``2**log2(x) = x``
+ *
+ *        The storage type of ``log2`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1086
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol log2(const std::string& symbol_name,
+                   Symbol data) {
+  return Operator("log2")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns element-wise ``log(1 + x)`` value of the input.
+ *
+ *        This function is more accurate than ``log(1 + x)``  for small ``x`` so that
+ *        :math:`1+x\approx 1`
+ *
+ *        The storage type of ``log1p`` output depends upon the input storage type:
+ *
+ *        - log1p(default) = default
+ *        - log1p(row_sparse) = row_sparse
+ *        - log1p(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1171
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol log1p(const std::string& symbol_name,
+                    Symbol data) {
+  return Operator("log1p")
+           .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Returns ``exp(x) - 1`` computed element-wise on the input.
+ *
+ *        This function provides greater precision than ``exp(x) - 1`` for small values
+ *
+ *        The storage type of ``expm1`` output depends upon the input storage type:
+ *
+ *        - expm1(default) = default
+ *        - expm1(row_sparse) = row_sparse
+ *        - expm1(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1189
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol expm1(const std::string& symbol_name,
+                    Symbol data) {
+  return Operator("expm1")
            .SetInput("data", data)
            .CreateSymbol(symbol_name);
 }
@@ -6626,321 +6209,6 @@ inline Symbol logical_not(const std::string& symbol_name,
 }
 
 /*!
- * \brief Returns element-wise exponential value of the input.
- *
- *        .. math::
- *        exp(x) = e^x \approx 2.718^x
- *
- *        Example::
- *
- *        exp([0, 1, 2]) = [1., 2.71828175, 7.38905621]
- *
- *        The storage type of ``exp`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L63
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol exp(const std::string& symbol_name,
-                  Symbol data) {
-  return Operator("exp")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns element-wise Natural logarithmic value of the input.
- *
- *        The natural logarithm is logarithm in base *e*, so that ``log(exp(x)) = x``
- *
- *        The storage type of ``log`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L76
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol log(const std::string& symbol_name,
-                  Symbol data) {
-  return Operator("log")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns element-wise Base-10 logarithmic value of the input.
- *
- *        ``10**log10(x) = x``
- *
- *        The storage type of ``log10`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L93
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol log10(const std::string& symbol_name,
-                    Symbol data) {
-  return Operator("log10")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns element-wise Base-2 logarithmic value of the input.
- *
- *        ``2**log2(x) = x``
- *
- *        The storage type of ``log2`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L105
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol log2(const std::string& symbol_name,
-                   Symbol data) {
-  return Operator("log2")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns element-wise ``log(1 + x)`` value of the input.
- *
- *        This function is more accurate than ``log(1 + x)``  for small ``x`` so that
- *        :math:`1+x\approx 1`
- *
- *        The storage type of ``log1p`` output depends upon the input storage type:
- *
- *        - log1p(default) = default
- *        - log1p(row_sparse) = row_sparse
- *        - log1p(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L206
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol log1p(const std::string& symbol_name,
-                    Symbol data) {
-  return Operator("log1p")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns ``exp(x) - 1`` computed element-wise on the input.
- *
- *        This function provides greater precision than ``exp(x) - 1`` for small values
- *
- *        The storage type of ``expm1`` output depends upon the input storage type:
- *
- *        - expm1(default) = default
- *        - expm1(row_sparse) = row_sparse
- *        - expm1(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L224
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol expm1(const std::string& symbol_name,
-                    Symbol data) {
-  return Operator("expm1")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns the reciprocal of the argument, element-wise.
- *
- *        Calculates 1/x.
- *
- *        Example::
- *
- *        reciprocal([-2, 1, 3, 1.6, 0.2]) = [-0.5, 1.0, 0.33333334, 0.625, 5.0]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L42
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol reciprocal(const std::string& symbol_name,
-                         Symbol data) {
-  return Operator("reciprocal")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns element-wise squared value of the input.
- *
- *        .. math::
- *        square(x) = x^2
- *
- *        Example::
- *
- *        square([2, 3, 4]) = [4, 9, 16]
- *
- *        The storage type of ``square`` output depends upon the input storage type:
- *
- *        - square(default) = default
- *        - square(row_sparse) = row_sparse
- *        - square(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L118
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol square(const std::string& symbol_name,
-                     Symbol data) {
-  return Operator("square")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns element-wise square-root value of the input.
- *
- *        .. math::
- *        \textrm{sqrt}(x) = \sqrt{x}
- *
- *        Example::
- *
- *        sqrt([4, 9, 16]) = [2, 3, 4]
- *
- *        The storage type of ``sqrt`` output depends upon the input storage type:
- *
- *        - sqrt(default) = default
- *        - sqrt(row_sparse) = row_sparse
- *        - sqrt(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L142
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol sqrt(const std::string& symbol_name,
-                   Symbol data) {
-  return Operator("sqrt")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns element-wise inverse square-root value of the input.
- *
- *        .. math::
- *        rsqrt(x) = 1/\sqrt{x}
- *
- *        Example::
- *
- *        rsqrt([4,9,16]) = [0.5, 0.33333334, 0.25]
- *
- *        The storage type of ``rsqrt`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L193
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol rsqrt(const std::string& symbol_name,
-                    Symbol data) {
-  return Operator("rsqrt")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns element-wise cube-root value of the input.
- *
- *        .. math::
- *        cbrt(x) = \sqrt[3]{x}
- *
- *        Example::
- *
- *        cbrt([1, 8, -125]) = [1, 2, -5]
- *
- *        The storage type of ``cbrt`` output depends upon the input storage type:
- *
- *        - cbrt(default) = default
- *        - cbrt(row_sparse) = row_sparse
- *        - cbrt(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L216
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol cbrt(const std::string& symbol_name,
-                   Symbol data) {
-  return Operator("cbrt")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
- * \brief Returns element-wise inverse cube-root value of the input.
- *
- *        .. math::
- *        rcbrt(x) = 1/\sqrt[3]{x}
- *
- *        Example::
- *
- *        rcbrt([1,8,-125]) = [1.0, 0.5, -0.2]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L269
- * \param symbol_name name of the resulting symbol
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol rcbrt(const std::string& symbol_name,
-                    Symbol data) {
-  return Operator("rcbrt")
-           .SetInput("data", data)
-           .CreateSymbol(symbol_name);
-}
-
-/*!
  * \brief Computes the element-wise sine of the input array.
  *
  *        The input should be in radians (:math:`2\pi` rad equals 360 degrees).
@@ -6957,7 +6225,7 @@ inline Symbol rcbrt(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L47
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L46
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -6982,7 +6250,7 @@ inline Symbol sin(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L90
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L89
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7011,7 +6279,7 @@ inline Symbol cos(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L140
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L139
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7041,7 +6309,7 @@ inline Symbol tan(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L187
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L160
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7067,7 +6335,7 @@ inline Symbol arcsin(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L206
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L179
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7096,7 +6364,7 @@ inline Symbol arccos(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L227
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L200
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7123,7 +6391,7 @@ inline Symbol arctan(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L274
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L219
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7150,7 +6418,7 @@ inline Symbol degrees(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L293
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L238
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7177,7 +6445,7 @@ inline Symbol radians(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L313
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L257
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7200,7 +6468,7 @@ inline Symbol sinh(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L351
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L272
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7227,7 +6495,7 @@ inline Symbol cosh(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L393
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L290
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7252,7 +6520,7 @@ inline Symbol tanh(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L436
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L306
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7273,7 +6541,7 @@ inline Symbol arcsinh(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L474
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L320
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7298,7 +6566,7 @@ inline Symbol arccosh(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L515
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L337
  * \param symbol_name name of the resulting symbol
  * \param data The input array.
  * \return new symbol
@@ -7337,9 +6605,8 @@ enum class EmbeddingDtype {
  *        If the input_dim is ip0 and output_dim is op0, then shape of the embedding
  *        (ip0, op0).
  *
- *        When "sparse_grad" is False, if any index mentioned is too large, it is
- *        addresses the last vector in an embedding matrix.
- *        When "sparse_grad" is True, an error will be raised if invalid indices are
+ *        By default, if any index mentioned is too large, it is replaced by the index
+ *        the last vector in an embedding matrix.
  *
  *        Examples::
  *
@@ -7377,7 +6644,7 @@ enum class EmbeddingDtype {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/indexing_op.cc:L539
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/indexing_op.cc:L519
  * \param symbol_name name of the resulting symbol
  * \param data The input array to the embedding operator.
  * \param weight The embedding weight matrix.
@@ -7415,7 +6682,7 @@ inline Symbol Embedding(const std::string& symbol_name,
 
 /*! \brief Specify how out-of-bound indices bahave. Default is "clip". "clip" means clip
  *        to the range. So, if all indices mentioned are too large, they are replaced by
- *        the index that addresses the last element along an axis. "wrap" means to wrap
+ *        the index that addresses the last element along an axis.  "wrap" means to wrap
  */
 enum class TakeMode {
   kClip = 0,
@@ -7476,14 +6743,14 @@ enum class TakeMode {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/indexing_op.cc:L718
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/indexing_op.cc:L695
  * \param symbol_name name of the resulting symbol
  * \param a The input array.
  * \param indices The indices of the values to be extracted.
  * \param axis The axis of input array to be taken.For input tensor of rank r, it could
  * \param mode Specify how out-of-bound indices bahave. Default is "clip". "clip" means
  *        clip to the range. So, if all indices mentioned are too large, they are
- *        replaced by the index that addresses the last element along an axis. "wrap"
+ *        replaced by the index that addresses the last element along an axis.  "wrap"
  * \return new symbol
  */
 inline Symbol take(const std::string& symbol_name,
@@ -7527,7 +6794,7 @@ inline Symbol take(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/indexing_op.cc:L777
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/indexing_op.cc:L753
  * \param symbol_name name of the resulting symbol
  * \param a The input array
  * \param indices The index array
@@ -7590,7 +6857,7 @@ enum class One_hotDtype {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/indexing_op.cc:L824
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/indexing_op.cc:L799
  * \param symbol_name name of the resulting symbol
  * \param indices array of locations where to set on_value
  * \param depth Depth of the one hot dimension.
@@ -7781,46 +7048,70 @@ inline Symbol ones_like(const std::string& symbol_name,
 
 /*!
  * \brief Reshapes the input array.
+ *
  *        .. note:: ``Reshape`` is deprecated, use ``reshape``
+ *
  *        Given an array and a shape, this function returns a copy of the array in the
  *        The shape is a tuple of integers such as (2,3,4). The size of the new shape
+ *
  *        Example::
+ *
  *        reshape([1,2,3,4], shape=(2,2)) = [[1,2], [3,4]]
+ *
  *        Some dimensions of the shape can take special values from the set {0, -1, -2,
+ *
  *        - ``0``  copy this dimension from the input to the output shape.
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (4,0,2), output shape = (4,3,2)
  *        - input shape = (2,3,4), shape = (2,0,0), output shape = (2,3,4)
+ *
  *        - ``-1`` infers the dimension of the output shape by using the remainder of the
  *        keeping the size of the new array same as that of the input array.
  *        At most one dimension of shape can be -1.
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (6,1,-1), output shape = (6,1,4)
  *        - input shape = (2,3,4), shape = (3,-1,8), output shape = (3,1,8)
  *        - input shape = (2,3,4), shape=(-1,), output shape = (24,)
+ *
  *        - ``-2`` copy all/remainder of the input dimensions to the output shape.
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (-2,), output shape = (2,3,4)
  *        - input shape = (2,3,4), shape = (2,-2), output shape = (2,3,4)
  *        - input shape = (2,3,4), shape = (-2,1,1), output shape = (2,3,4,1,1)
+ *
  *        - ``-3`` use the product of two consecutive dimensions of the input shape as
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (-3,4), output shape = (6,4)
  *        - input shape = (2,3,4,5), shape = (-3,-3), output shape = (6,20)
  *        - input shape = (2,3,4), shape = (0,-3), output shape = (2,12)
  *        - input shape = (2,3,4), shape = (-3,-2), output shape = (6,4)
+ *
  *        - ``-4`` split one dimension of the input into two dimensions passed subsequent
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (-4,1,2,-2), output shape =(1,2,3,4)
  *        - input shape = (2,3,4), shape = (2,-4,-1,3,-2), output shape = (2,1,3,4)
+ *
  *        If the argument `reverse` is set to 1, then the special values are inferred
+ *
  *        Example::
+ *
  *        - without reverse=1, for input shape = (10,5,4), shape = (-1,0), output shape
  *        - with reverse=1, output shape will be (50,4).
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L175
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L202
  * \param symbol_name name of the resulting symbol
  * \param data Input data to reshape.
  * \param shape The target shape
@@ -7847,27 +7138,36 @@ inline Symbol Reshape(const std::string& symbol_name,
 
 /*!
  * \brief Permutes the dimensions of an array.
+ *
  *        Examples::
+ *
  *        x = [[ 1, 2],
  *        [ 3, 4]]
+ *
  *        transpose(x) = [[ 1.,  3.],
  *        [ 2.,  4.]]
+ *
  *        x = [[[ 1.,  2.],
  *        [ 3.,  4.]],
+ *
  *        [[ 5.,  6.],
  *        [ 7.,  8.]]]
+ *
  *        transpose(x) = [[[ 1.,  5.],
  *        [ 3.,  7.]],
+ *
  *        [[ 2.,  6.],
  *        [ 4.,  8.]]]
+ *
  *        transpose(x, axes=(1,0,2)) = [[[ 1.,  2.],
  *        [ 5.,  6.]],
+ *
  *        [[ 3.,  4.],
  *        [ 7.,  8.]]]
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L328
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L375
  * \param symbol_name name of the resulting symbol
  * \param data Source input
  * \param axes Target axis order. By default the axes will be inverted.
@@ -7884,12 +7184,14 @@ inline Symbol transpose(const std::string& symbol_name,
 
 /*!
  * \brief Inserts a new axis of size 1 into the array shape
+ *
  *        For example, given ``x`` with shape ``(2,3,4)``, then ``expand_dims(x, axis=1)``
  *        will return a new array with shape ``(2,1,3,4)``.
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L395
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L416
  * \param symbol_name name of the resulting symbol
  * \param data Source input
  * \param axis Position where new axis is to be inserted. Suppose that the input
@@ -7907,33 +7209,44 @@ inline Symbol expand_dims(const std::string& symbol_name,
 
 /*!
  * \brief Slices a region of the array.
+ *
  *        .. note:: ``crop`` is deprecated. Use ``slice`` instead.
+ *
  *        This function returns a sliced array between the indices given
  *        by `begin` and `end` with the corresponding `step`.
+ *
  *        For an input array of ``shape=(d_0, d_1, ..., d_n-1)``,
  *        slice operation with ``begin=(b_0, b_1...b_m-1)``,
  *        ``end=(e_0, e_1, ..., e_m-1)``, and ``step=(s_0, s_1, ..., s_m-1)``,
  *        where m <= n, results in an array with the shape
  *        ``(|e_0-b_0|/|s_0|, ..., |e_m-1-b_m-1|/|s_m-1|, d_m, ..., d_n-1)``.
+ *
  *        The resulting array's *k*-th dimension contains elements
  *        from the *k*-th dimension of the input array starting
  *        from index ``b_k`` (inclusive) with step ``s_k``
  *        until reaching ``e_k`` (exclusive).
+ *
  *        If the *k*-th elements are `None` in the sequence of `begin`, `end`,
  *        and `step`, the following rule will be used to set default values.
  *        If `s_k` is `None`, set `s_k=1`. If `s_k > 0`, set `b_k=0`, `e_k=d_k`;
  *        else, set `b_k=d_k-1`, `e_k=-1`.
+ *
  *        The storage type of ``slice`` output depends on storage types of inputs
+ *
  *        - slice(csr) = csr
  *        - otherwise, ``slice`` generates output with default storage
+ *
  *        .. note:: When input data storage type is csr, it only supports
  *        step=(), or step=(None,), or step=(1,) to generate a csr output.
  *        For other step parameter values, it falls back to slicing
  *        a dense tensor.
+ *
  *        Example::
+ *
  *        x = [[  1.,   2.,   3.,   4.],
  *        [  5.,   6.,   7.,   8.],
  *        [  9.,  10.,  11.,  12.]]
+ *
  *        slice(x, begin=(0,1), end=(2,4)) = [[ 2.,  3.,  4.],
  *        [ 6.,  7.,  8.]]
  *        slice(x, begin=(None, 0), end=(None, 3), step=(-1, 2)) = [[9., 11.],
@@ -7942,7 +7255,7 @@ inline Symbol expand_dims(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L482
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L506
  * \param symbol_name name of the resulting symbol
  * \param data Source input
  * \param begin starting indices for the slice operation, supports negative indices.
@@ -7965,24 +7278,30 @@ inline Symbol slice(const std::string& symbol_name,
 
 /*!
  * \brief Slices along a given axis.
+ *
  *        Returns an array slice along a given `axis` starting from the `begin` index
  *        to the `end` index.
+ *
  *        Examples::
+ *
  *        x = [[  1.,   2.,   3.,   4.],
  *        [  5.,   6.,   7.,   8.],
  *        [  9.,  10.,  11.,  12.]]
+ *
  *        slice_axis(x, axis=0, begin=1, end=3) = [[  5.,   6.,   7.,   8.],
  *        [  9.,  10.,  11.,  12.]]
+ *
  *        slice_axis(x, axis=1, begin=0, end=2) = [[  1.,   2.],
  *        [  5.,   6.],
  *        [  9.,  10.]]
+ *
  *        slice_axis(x, axis=1, begin=-3, end=-1) = [[  2.,   3.],
  *        [  6.,   7.],
  *        [ 10.,  11.]]
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L571
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L596
  * \param symbol_name name of the resulting symbol
  * \param data Source input
  * \param axis Axis along which to be sliced, supports negative indexes.
@@ -8005,31 +7324,46 @@ inline Symbol slice_axis(const std::string& symbol_name,
 
 /*!
  * \brief Slices a region of the array like the shape of another array.
+ *
  *        This function is similar to ``slice``, however, the `begin` are always `0`s
  *        and `end` of specific axes are inferred from the second input `shape_like`.
+ *
  *        Given the second `shape_like` input of ``shape=(d_0, d_1, ..., d_n-1)``,
  *        a ``slice_like`` operator with default empty `axes`, it performs the
  *        following operation:
+ *
  *        `` out = slice(input, begin=(0, 0, ..., 0), end=(d_0, d_1, ..., d_n-1))``.
+ *
  *        When `axes` is not empty, it is used to speficy which axes are being sliced.
+ *
  *        Given a 4-d input data, ``slice_like`` operator with ``axes=(0, 2, -1)``
  *        will perform the following operation:
+ *
  *        `` out = slice(input, begin=(0, 0, 0, 0), end=(d_0, None, d_2, d_3))``.
+ *
  *        Note that it is allowed to have first and second input with different
  *        however, you have to make sure the `axes` are specified and not exceeding the
  *        dimension limits.
+ *
  *        For example, given `input_1` with ``shape=(2,3,4,5)`` and `input_2` with
  *        ``shape=(1,2,3)``, it is not allowed to use:
+ *
  *        `` out = slice_like(a, b)`` because ndim of `input_1` is 4, and ndim of
  *        is 3.
+ *
  *        The following is allowed in this situation:
+ *
  *        `` out = slice_like(a, b, axes=(0, 2))``
+ *
  *        Example::
+ *
  *        x = [[  1.,   2.,   3.,   4.],
  *        [  5.,   6.,   7.,   8.],
  *        [  9.,  10.,  11.,  12.]]
+ *
  *        y = [[  0.,   0.,   0.],
  *        [  0.,   0.,   0.]]
+ *
  *        slice_like(x, y) = [[ 1.,  2.,  3.]
  *        [ 5.,  6.,  7.]]
  *        slice_like(x, y, axes=(0, 1)) = [[ 1.,  2.,  3.]
@@ -8042,7 +7376,7 @@ inline Symbol slice_axis(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L625
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L665
  * \param symbol_name name of the resulting symbol
  * \param data Source input
  * \param shape_like Shape like input
@@ -8063,15 +7397,21 @@ inline Symbol slice_like(const std::string& symbol_name,
 
 /*!
  * \brief Clips (limits) the values in an array.
+ *
  *        Given an interval, values outside the interval are clipped to the interval
- *        Clipping ``x`` between `a_min` and `a_max` would be::
- *        .. math::
- *        clip(x, a_min, a_max) = \max(\min(x, a_max), a_min))
+ *        Clipping ``x`` between `a_min` and `a_x` would be::
+ *
+ *        clip(x, a_min, a_max) = max(min(x, a_max), a_min))
+ *
  *        Example::
+ *
  *        x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+ *
  *        clip(x,1,8) = [ 1.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  8.]
+ *
  *        The storage type of ``clip`` output depends on storage types of inputs and the
  *        parameter values:
+ *
  *        - clip(default) = default
  *        - clip(row_sparse, a_min <= 0, a_max >= 0) = row_sparse
  *        - clip(csr, a_min <= 0, a_max >= 0) = csr
@@ -8081,8 +7421,9 @@ inline Symbol slice_like(const std::string& symbol_name,
  *        - clip(csr, a_min > 0, a_max > 0) = csr
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L677
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L723
  * \param symbol_name name of the resulting symbol
  * \param data Input array.
  * \param a_min Minimum value
@@ -8102,24 +7443,32 @@ inline Symbol clip(const std::string& symbol_name,
 
 /*!
  * \brief Repeats elements of an array.
+ *
  *        By default, ``repeat`` flattens the input array into 1-D and then repeats the
  *        elements::
+ *
  *        x = [[ 1, 2],
  *        [ 3, 4]]
+ *
  *        repeat(x, repeats=2) = [ 1.,  1.,  2.,  2.,  3.,  3.,  4.,  4.]
+ *
  *        The parameter ``axis`` specifies the axis along which to perform repeat::
+ *
  *        repeat(x, repeats=2, axis=1) = [[ 1.,  1.,  2.,  2.],
  *        [ 3.,  3.,  4.,  4.]]
+ *
  *        repeat(x, repeats=2, axis=0) = [[ 1.,  2.],
  *        [ 1.,  2.],
  *        [ 3.,  4.],
  *        [ 3.,  4.]]
+ *
  *        repeat(x, repeats=2, axis=-1) = [[ 1.,  1.,  2.,  2.],
  *        [ 3.,  3.,  4.,  4.]]
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L744
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L796
  * \param symbol_name name of the resulting symbol
  * \param data Input data array
  * \param repeats The number of repetitions for each element.
@@ -8140,25 +7489,35 @@ inline Symbol repeat(const std::string& symbol_name,
 
 /*!
  * \brief Repeats the whole array multiple times.
+ *
  *        If ``reps`` has length *d*, and input array has dimension of *n*. There are
  *        three cases:
+ *
  *        - **n=d**. Repeat *i*-th dimension of the input by ``reps[i]`` times::
+ *
  *        x = [[1, 2],
  *        [3, 4]]
+ *
  *        tile(x, reps=(2,3)) = [[ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.],
  *        [ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.]]
+ *
  *        - **n>d**. ``reps`` is promoted to length *n* by pre-pending 1's to it. Thus for
  *        an input shape ``(2,3)``, ``repos=(2,)`` is treated as ``(1,2)``::
+ *
+ *
  *        tile(x, reps=(2,)) = [[ 1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.]]
+ *
  *        - **n<d**. The input is promoted to be d-dimensional by prepending new axes. So
  *        shape ``(2,2)`` array is promoted to ``(1,2,2)`` for 3-D replication::
+ *
  *        tile(x, reps=(2,2,3)) = [[[ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.],
  *        [ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.]],
+ *
  *        [[ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.],
  *        [ 1.,  2.,  1.,  2.,  1.,  2.],
@@ -8166,7 +7525,7 @@ inline Symbol repeat(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L796
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L857
  * \param symbol_name name of the resulting symbol
  * \param data Input data array
  * \param reps The number of times for repeating the tensor a. Each dim size of reps must
@@ -8185,18 +7544,23 @@ inline Symbol tile(const std::string& symbol_name,
 
 /*!
  * \brief Reverses the order of elements along given axis while preserving array shape.
+ *
  *        Note: reverse and flip are equivalent. We use reverse in the following examples.
+ *
  *        Examples::
+ *
  *        x = [[ 0.,  1.,  2.,  3.,  4.],
  *        [ 5.,  6.,  7.,  8.,  9.]]
+ *
  *        reverse(x, axis=0) = [[ 5.,  6.,  7.,  8.,  9.],
  *        [ 0.,  1.,  2.,  3.,  4.]]
+ *
  *        reverse(x, axis=1) = [[ 4.,  3.,  2.,  1.,  0.],
  *        [ 9.,  8.,  7.,  6.,  5.]]
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L832
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L898
  * \param symbol_name name of the resulting symbol
  * \param data Input data array
  * \param axis The axis which to reverse elements.
@@ -8213,12 +7577,16 @@ inline Symbol reverse(const std::string& symbol_name,
 
 /*!
  * \brief Join a sequence of arrays along a new axis.
+ *
  *        The axis parameter specifies the index of the new axis in the dimensions of the
  *        result. For example, if axis=0 it will be the first dimension and if axis=-1 it
  *        will be the last dimension.
+ *
  *        Examples::
+ *
  *        x = [1, 2]
  *        y = [3, 4]
+ *
  *        stack(x, y) = [[1, 2],
  *        [3, 4]]
  *        stack(x, y, axis=1) = [[1, 3],
@@ -8245,12 +7613,15 @@ inline Symbol stack(const std::string& symbol_name,
  * \brief Remove single-dimensional entries from the shape of an array.
  *        Same behavior of defining the output tensor shape as numpy.squeeze for the most
  *        See the following note for exception.
+ *
  *        Examples::
+ *
  *        data = [[[0], [1], [2]]]
  *        squeeze(data) = [0, 1, 2]
  *        squeeze(data, axis=0) = [[0], [1], [2]]
  *        squeeze(data, axis=2) = [[0, 1, 2]]
  *        squeeze(data, axis=(0, 2)) = [0, 1, 2]
+ *
  *        .. Note::
  *        The output of this operator will keep at least one dimension not removed. For
  *        squeeze([[[4]]]) = [4], while in numpy.squeeze, the output will become a scalar.
@@ -8261,11 +7632,11 @@ inline Symbol stack(const std::string& symbol_name,
  * \return new symbol
  */
 inline Symbol squeeze(const std::string& symbol_name,
-                      Symbol data,
+                      const std::vector<Symbol>& data,
                       dmlc::optional<Shape> axis = dmlc::optional<Shape>()) {
   return Operator("squeeze")
            .SetParam("axis", axis)
-           .SetInput("data", data)
+(data)
            .CreateSymbol(symbol_name);
 }
 
@@ -8275,15 +7646,20 @@ inline Symbol squeeze(const std::string& symbol_name,
  *        https://github.com/onnx/onnx/blob/master/docs/Operators.md#DepthToSpace.
  *        The output is a new tensor where the values from depth dimension are moved in
  *        to height and width dimension. The reverse of this operation is
+ *
  *        .. math::
+ *
  *        \begin{gather*}
  *        x \prime = reshape(x, [N, block\_size, block\_size, C / (block\_size ^ 2), H *
  *        x \prime \prime = transpose(x \prime, [0, 3, 4, 1, 5, 2]) \\
  *        y = reshape(x \prime \prime, [N, C / (block\_size ^ 2), H * block\_size, W *
  *        \end{gather*}
+ *
  *        where :math:`x` is an input tensor with default layout as :math:`[N, C, H, W]`:
  *        and :math:`y` is the output tensor of layout :math:`[N, C / (block\_size ^ 2),
+ *
  *        Example::
+ *
  *        x = [[[[0, 1, 2],
  *        [3, 4, 5]],
  *        [[6, 7, 8],
@@ -8292,6 +7668,7 @@ inline Symbol squeeze(const std::string& symbol_name,
  *        [15, 16, 17]],
  *        [[18, 19, 20],
  *        [21, 22, 23]]]]
+ *
  *        depth_to_space(x, 2) = [[[[0, 6, 1, 7, 2, 8],
  *        [12, 18, 13, 19, 14, 20],
  *        [3, 9, 4, 10, 5, 11],
@@ -8299,7 +7676,7 @@ inline Symbol squeeze(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L972
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L1050
  * \param symbol_name name of the resulting symbol
  * \param data Input ndarray
  * \param block_size Blocks of [block_size. block_size] are moved
@@ -8318,21 +7695,29 @@ inline Symbol depth_to_space(const std::string& symbol_name,
  * \brief Rearranges(permutes) blocks of spatial data into depth.
  *        Similar to ONNX SpaceToDepth operator:
  *        https://github.com/onnx/onnx/blob/master/docs/Operators.md#SpaceToDepth
+ *
  *        The output is a new tensor where the values from height and width dimension are
  *        moved to the depth dimension. The reverse of this operation is
+ *
  *        .. math::
+ *
  *        \begin{gather*}
  *        x \prime = reshape(x, [N, C, H / block\_size, block\_size, W / block\_size,
  *        x \prime \prime = transpose(x \prime, [0, 3, 5, 1, 2, 4]) \\
  *        y = reshape(x \prime \prime, [N, C * (block\_size ^ 2), H / block\_size, W /
  *        \end{gather*}
+ *
  *        where :math:`x` is an input tensor with default layout as :math:`[N, C, H, W]`:
  *        and :math:`y` is the output tensor of layout :math:`[N, C * (block\_size ^ 2),
+ *
  *        Example::
+ *
  *        x = [[[[0, 6, 1, 7, 2, 8],
  *        [12, 18, 13, 19, 14, 20],
  *        [3, 9, 4, 10, 5, 11],
  *        [15, 21, 16, 22, 17, 23]]]]
+ *
+ *
  *        space_to_depth(x, 2) = [[[[0, 1, 2],
  *        [3, 4, 5]],
  *        [[6, 7, 8],
@@ -8344,7 +7729,7 @@ inline Symbol depth_to_space(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L1019
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L1104
  * \param symbol_name name of the resulting symbol
  * \param data Input ndarray
  * \param block_size Blocks of [block_size. block_size] are moved
@@ -8378,15 +7763,11 @@ enum class TopkDtype {
   kFloat32 = 1,
   kFloat64 = 2,
   kInt32 = 3,
-  kInt64 = 4,
-  kUint8 = 5
+  kUint8 = 4
 };
 
 /*!
- * \brief Returns the indices of the top *k* elements in an input array along the given
- *        axis (by default).
- *        If ret_type is set to 'value' returns the value of top *k* elements (instead of
- *        In case of ret_type = 'both', both value and index would be returned.
+ * \brief Returns the top *k* elements in an input array along the given axis.
  *        The returned elements will be sorted.
  *
  *        Examples::
@@ -8416,7 +7797,7 @@ enum class TopkDtype {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/ordering_op.cc:L68
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/ordering_op.cc:L64
  * \param symbol_name name of the resulting symbol
  * \param data The input array
  * \param axis Axis along which to choose the top k indices. If not given, the flattened
@@ -8447,7 +7828,6 @@ inline Symbol topk(const std::string& symbol_name,
     "float32",
     "float64",
     "int32",
-    "int64",
     "uint8"
   };
   return Operator("topk")
@@ -8473,7 +7853,7 @@ inline Symbol topk(const std::string& symbol_name,
  *        [ 1.,  3.]]
  *
  *        // flattens and then sorts
- *        sort(x, axis=None) = [ 1.,  1.,  3.,  4.]
+ *        sort(x) = [ 1.,  1.,  3.,  4.]
  *
  *        // sorts along the first axis
  *        sort(x, axis=0) = [[ 1.,  1.],
@@ -8486,7 +7866,7 @@ inline Symbol topk(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/ordering_op.cc:L132
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/ordering_op.cc:L127
  * \param symbol_name name of the resulting symbol
  * \param data The input array
  * \param axis Axis along which to choose sort the input tensor. If not given, the
@@ -8512,8 +7892,7 @@ enum class ArgsortDtype {
   kFloat32 = 1,
   kFloat64 = 2,
   kInt32 = 3,
-  kInt64 = 4,
-  kUint8 = 5
+  kUint8 = 4
 };
 
 /*!
@@ -8536,11 +7915,11 @@ enum class ArgsortDtype {
  *        [ 0.,  1.,  0.]]
  *
  *        // flatten and then sort
- *        argsort(x, axis=None) = [ 3.,  1.,  5.,  0.,  4.,  2.]
+ *        argsort(x) = [ 3.,  1.,  5.,  0.,  4.,  2.]
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/ordering_op.cc:L183
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/ordering_op.cc:L177
  * \param symbol_name name of the resulting symbol
  * \param data The input array
  * \param axis Axis along which to sort the input tensor. If not given, the flattened
@@ -8559,7 +7938,6 @@ inline Symbol argsort(const std::string& symbol_name,
     "float32",
     "float64",
     "int32",
-    "int64",
     "uint8"
   };
   return Operator("argsort")
@@ -8645,7 +8023,7 @@ inline Symbol argsort(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/bilinear_sampler.cc:L256
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/bilinear_sampler.cc:L256
  * \param symbol_name name of the resulting symbol
  * \param data Input data to the BilinearsamplerOp.
  * \param grid Input grid to the BilinearsamplerOp.grid has two channels: x_src, y_src
@@ -8804,7 +8182,7 @@ inline Symbol Convolution_v1(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/correlation.cc:L198
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/correlation.cc:L198
  * \param symbol_name name of the resulting symbol
  * \param data1 Input data1 to the correlation.
  * \param data2 Input data2 to the correlation.
@@ -8848,7 +8226,7 @@ inline Symbol Correlation(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/crop.cc:L50
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/crop.cc:L50
  * \param symbol_name name of the resulting symbol
  * \param data Tensor or List of Tensors, the second input will be used as crop_like
  * \param num_args Number of inputs for crop, if equals one, then we will use the h_wfor
@@ -8925,7 +8303,7 @@ inline Symbol GridGenerator(const std::string& symbol_name,
  *        If the input data is of shape [batch, channel, spacial_dim1, spacial_dim2, ...],
  *        `gamma` and `beta` parameters must be vectors of shape [channel].
  *
- *        This implementation is based on this paper [1]_
+ *        This implementation is based on paper:
  *
  *        .. [1] Instance Normalization: The Missing Ingredient for Fast Stylization,
  *        D. Ulyanov, A. Vedaldi, V. Lempitsky, 2016 (arXiv:1607.08022v2).
@@ -8949,7 +8327,7 @@ inline Symbol GridGenerator(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/instance_norm.cc:L95
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/instance_norm.cc:L95
  * \param symbol_name name of the resulting symbol
  * \param data An n-dimensional input array (n > 2) of the form [batch, channel,
  * \param gamma A vector of length 'channel', which multiplies the normalized input.
@@ -9034,7 +8412,7 @@ enum class L2NormalizationMode {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/l2_normalization.cc:L196
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/l2_normalization.cc:L196
  * \param symbol_name name of the resulting symbol
  * \param data Input array to normalize.
  * \param eps A small constant for numerical stability.
@@ -9092,7 +8470,7 @@ enum class MakeLossNormalization {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/make_loss.cc:L71
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/make_loss.cc:L71
  * \param symbol_name name of the resulting symbol
  * \param data Input array.
  * \param grad_scale Gradient scale as a supplement to unary and binary operators
@@ -9176,7 +8554,7 @@ enum class Pooling_v1PoolingConvention {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/pooling_v1.cc:L104
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/pooling_v1.cc:L104
  * \param symbol_name name of the resulting symbol
  * \param data Input data to the pooling operator.
  * \param kernel pooling kernel size: (y, x) or (d, y, x)
@@ -9212,6 +8590,76 @@ inline Symbol Pooling_v1(const std::string& symbol_name,
            .SetParam("stride", stride)
            .SetParam("pad", pad)
            .SetInput("data", data)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Performs region of interest(ROI) pooling on the input array.
+ *
+ *        ROI pooling is a variant of a max pooling layer, in which the output size is
+ *        region of interest is a parameter. Its purpose is to perform max pooling on the
+ *        of non-uniform sizes to obtain fixed-size feature maps. ROI pooling is a
+ *        layer mostly used in training a `Fast R-CNN` network for object detection.
+ *
+ *        This operator takes a 4D feature map as an input array and region proposals as
+ *        then it pools over sub-regions of input and produces a fixed-sized output array
+ *        regardless of the ROI size.
+ *
+ *        To crop the feature map accordingly, you can resize the bounding box coordinates
+ *        by changing the parameters `rois` and `spatial_scale`.
+ *
+ *        The cropped feature maps are pooled by standard max pooling operation to a
+ *        indicated by a `pooled_size` parameter. batch_size will change to the number of
+ *        bounding boxes after `ROIPooling`.
+ *
+ *        The size of each region of interest doesn't have to be perfectly divisible by
+ *        the number of pooling sections(`pooled_size`).
+ *
+ *        Example::
+ *
+ *        x = [[[[  0.,   1.,   2.,   3.,   4.,   5.],
+ *        [  6.,   7.,   8.,   9.,  10.,  11.],
+ *        [ 12.,  13.,  14.,  15.,  16.,  17.],
+ *        [ 18.,  19.,  20.,  21.,  22.,  23.],
+ *        [ 24.,  25.,  26.,  27.,  28.,  29.],
+ *        [ 30.,  31.,  32.,  33.,  34.,  35.],
+ *        [ 36.,  37.,  38.,  39.,  40.,  41.],
+ *        [ 42.,  43.,  44.,  45.,  46.,  47.]]]]
+ *
+ *        // region of interest i.e. bounding box coordinates.
+ *        y = [[0,0,0,4,4]]
+ *
+ *        // returns array of shape (2,2) according to the given roi with max pooling.
+ *        ROIPooling(x, y, (2,2), 1.0) = [[[[ 14.,  16.],
+ *        [ 26.,  28.]]]]
+ *
+ *        // region of interest is changed due to the change in `spacial_scale` parameter.
+ *        ROIPooling(x, y, (2,2), 0.7) = [[[[  7.,   9.],
+ *        [ 19.,  21.]]]]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/roi_pooling.cc:L295
+ * \param symbol_name name of the resulting symbol
+ * \param data The input array to the pooling operator,  a 4D Feature maps
+ * \param rois Bounding box coordinates, a 2D array of [[batch_index, x1, y1, x2, y2]],
+ *        where (x1, y1) and (x2, y2) are top left and bottom right corners of designated
+ *        region of interest. `batch_index` indicates the index of corresponding image in
+ * \param pooled_size ROI pooling output shape (h,w)
+ * \param spatial_scale Ratio of input feature map height (or w) to raw image height (or
+ * \return new symbol
+ */
+inline Symbol ROIPooling(const std::string& symbol_name,
+                         Symbol data,
+                         Symbol rois,
+                         Shape pooled_size,
+                         mx_float spatial_scale) {
+  return Operator("ROIPooling")
+           .SetParam("pooled_size", pooled_size)
+           .SetParam("spatial_scale", spatial_scale)
+           .SetInput("data", data)
+           .SetInput("rois", rois)
            .CreateSymbol(symbol_name);
 }
 
@@ -9263,7 +8711,7 @@ inline Symbol Pooling_v1(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/sequence_last.cc:L106
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/sequence_last.cc:L100
  * \param symbol_name name of the resulting symbol
  * \param data n-dimensional input array of the form [max_sequence_length, batch_size,
  * \param sequence_length vector of sequence lengths of the form [batch_size]
@@ -9278,6 +8726,100 @@ inline Symbol SequenceLast(const std::string& symbol_name,
                            int axis = 0) {
   return Operator("SequenceLast")
            .SetParam("use_sequence_length", use_sequence_length)
+           .SetParam("axis", axis)
+           .SetInput("data", data)
+           .SetInput("sequence_length", sequence_length)
+           .CreateSymbol(symbol_name);
+}
+
+/*!
+ * \brief Sets all elements outside the sequence to a constant value.
+ *
+ *        This function takes an n-dimensional input array of the form
+ *        [max_sequence_length, batch_size, other_feature_dims] and returns an array of
+ *
+ *        Parameter `sequence_length` is used to handle variable-length sequences.
+ *        should be an input array of positive ints of dimension [batch_size].
+ *        To use this parameter, set `use_sequence_length` to `True`,
+ *        otherwise each example in the batch is assumed to have the max sequence length
+ *        this operator works as the `identity` operator.
+ *
+ *        Example::
+ *
+ *        x = [[[  1.,   2.,   3.],
+ *        [  4.,   5.,   6.]],
+ *
+ *        [[  7.,   8.,   9.],
+ *        [ 10.,  11.,  12.]],
+ *
+ *        [[ 13.,  14.,   15.],
+ *        [ 16.,  17.,   18.]]]
+ *
+ *        // Batch 1
+ *        B1 = [[  1.,   2.,   3.],
+ *        [  7.,   8.,   9.],
+ *        [ 13.,  14.,  15.]]
+ *
+ *        // Batch 2
+ *        B2 = [[  4.,   5.,   6.],
+ *        [ 10.,  11.,  12.],
+ *        [ 16.,  17.,  18.]]
+ *
+ *        // works as identity operator when sequence_length parameter is not used
+ *        SequenceMask(x) = [[[  1.,   2.,   3.],
+ *        [  4.,   5.,   6.]],
+ *
+ *        [[  7.,   8.,   9.],
+ *        [ 10.,  11.,  12.]],
+ *
+ *        [[ 13.,  14.,   15.],
+ *        [ 16.,  17.,   18.]]]
+ *
+ *        // sequence_length [1,1] means 1 of each batch will be kept
+ *        // and other rows are masked with default mask value = 0
+ *        SequenceMask(x, sequence_length=[1,1], use_sequence_length=True) =
+ *        [[[  1.,   2.,   3.],
+ *        [  4.,   5.,   6.]],
+ *
+ *        [[  0.,   0.,   0.],
+ *        [  0.,   0.,   0.]],
+ *
+ *        [[  0.,   0.,   0.],
+ *        [  0.,   0.,   0.]]]
+ *
+ *        // sequence_length [2,3] means 2 of batch B1 and 3 of batch B2 will be kept
+ *        // and other rows are masked with value = 1
+ *        SequenceMask(x, sequence_length=[2,3], use_sequence_length=True, value=1) =
+ *        [[[  1.,   2.,   3.],
+ *        [  4.,   5.,   6.]],
+ *
+ *        [[  7.,   8.,   9.],
+ *        [  10.,  11.,  12.]],
+ *
+ *        [[   1.,   1.,   1.],
+ *        [  16.,  17.,  18.]]]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/sequence_mask.cc:L186
+ * \param symbol_name name of the resulting symbol
+ * \param data n-dimensional input array of the form [max_sequence_length, batch_size,
+ * \param sequence_length vector of sequence lengths of the form [batch_size]
+ * \param use_sequence_length If set to true, this layer takes in an extra input
+ * \param value The value to be used as a mask.
+ * \param axis The sequence axis. Only values of 0 and 1 are currently supported.
+ * \return new symbol
+ */
+inline Symbol SequenceMask(const std::string& symbol_name,
+                           Symbol data,
+                           Symbol sequence_length,
+                           bool use_sequence_length = false,
+                           mx_float value = 0,
+                           int axis = 0) {
+  return Operator("SequenceMask")
+           .SetParam("use_sequence_length", use_sequence_length)
+           .SetParam("value", value)
            .SetParam("axis", axis)
            .SetInput("data", data)
            .SetInput("sequence_length", sequence_length)
@@ -9353,7 +8895,7 @@ inline Symbol SequenceLast(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/sequence_reverse.cc:L122
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/sequence_reverse.cc:L122
  * \param symbol_name name of the resulting symbol
  * \param data n-dimensional input array of the form [max_sequence_length, batch_size,
  * \param sequence_length vector of sequence lengths of the form [batch_size]
@@ -9519,7 +9061,7 @@ inline Symbol fill_element_0index(const std::string& symbol_name,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/batch_norm_v1.cc:L95
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/batch_norm_v1.cc:L95
  * \param data Input data to batch normalization
  * \param gamma gamma array
  * \param beta beta array
@@ -9555,7 +9097,7 @@ inline Symbol BatchNorm_v1(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/all_finite.cc:L101
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/contrib/all_finite.cc:L101
  * \param data Array
  * \param init_output Initialize output to 1.
  * \return new symbol
@@ -9573,7 +9115,7 @@ inline Symbol all_finite(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/all_finite.cc:L133
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/contrib/all_finite.cc:L133
  * \param data Arrays
  * \param num_arrays Number of arrays.
  * \param init_output Initialize output to 1.
@@ -9625,7 +9167,7 @@ inline Symbol multi_all_finite(const std::vector<Symbol>& data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/krprod.cc:L108
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/contrib/krprod.cc:L108
  * \param args Positional input matrices
  * \return new symbol
  */
@@ -9636,235 +9178,16 @@ inline Symbol khatri_rao(const std::vector<Symbol>& args) {
 }
 
 /*!
- * \brief Compute the LARS coefficients of multiple weights and grads from their sums of
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/multi_lars.cc:L37
- * \param lrs Learning rates to scale by LARS coefficient
- * \param weights_sum_sq sum of square of weights arrays
- * \param grads_sum_sq sum of square of gradients arrays
- * \param wds weight decays
- * \param eta LARS eta
- * \param eps LARS eps
- * \param rescale_grad Gradient rescaling factor
- * \return new symbol
- */
-inline Symbol multi_lars(Symbol lrs,
-                         Symbol weights_sum_sq,
-                         Symbol grads_sum_sq,
-                         Symbol wds,
-                         mx_float eta,
-                         mx_float eps,
-                         mx_float rescale_grad = 1) {
-  return Operator("multi_lars")
-           .SetParam("eta", eta)
-           .SetParam("eps", eps)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetInput("lrs", lrs)
-           .SetInput("weights_sum_sq", weights_sum_sq)
-           .SetInput("grads_sum_sq", grads_sum_sq)
-           .SetInput("wds", wds)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Compute the sums of squares of multiple arrays
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/multi_sum_sq.cc:L36
- * \param data Arrays
- * \param num_arrays number of input arrays.
- * \return new symbol
- */
-inline Symbol multi_sum_sq(const std::vector<Symbol>& data,
-                           int num_arrays) {
-  return Operator("multi_sum_sq")
-           .SetParam("num_arrays", num_arrays)
-(data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Update function for Stochastic Gradient Descent (SDG) optimizer.
- *
- *        It updates the weights using::
- *
- *        weight = weight - learning_rate * (gradient + wd * weight)
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/preloaded_multi_sgd.cc:L42
- * \param data Weights, gradients, learning rates and weight decays
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \param num_weights Number of updated weights.
- * \return new symbol
- */
-inline Symbol preloaded_multi_sgd_update(const std::vector<Symbol>& data,
-                                         mx_float rescale_grad = 1,
-                                         mx_float clip_gradient = -1,
-                                         int num_weights = 1) {
-  return Operator("preloaded_multi_sgd_update")
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetParam("num_weights", num_weights)
-(data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Momentum update function for Stochastic Gradient Descent (SGD) optimizer.
- *
- *        Momentum update has better convergence rates on neural networks. Mathematically
- *        like below:
- *
- *        .. math::
- *
- *        v_1 = \alpha * \nabla J(W_0)\\
- *        v_t = \gamma v_{t-1} - \alpha * \nabla J(W_{t-1})\\
- *        W_t = W_{t-1} + v_t
- *
- *        It updates the weights using::
- *
- *        v = momentum * v - learning_rate * gradient
- *        weight += v
- *
- *        Where the parameter ``momentum`` is the decay rate of momentum estimates at
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/preloaded_multi_sgd.cc:L91
- * \param data Weights, gradients, momentum, learning rates and weight decays
- * \param momentum The decay rate of momentum estimates at each epoch.
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \param num_weights Number of updated weights.
- * \return new symbol
- */
-inline Symbol preloaded_multi_sgd_mom_update(const std::vector<Symbol>& data,
-                                             mx_float momentum = 0,
-                                             mx_float rescale_grad = 1,
-                                             mx_float clip_gradient = -1,
-                                             int num_weights = 1) {
-  return Operator("preloaded_multi_sgd_mom_update")
-           .SetParam("momentum", momentum)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetParam("num_weights", num_weights)
-(data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Update function for multi-precision Stochastic Gradient Descent (SDG) optimizer.
- *
- *        It updates the weights using::
- *
- *        weight = weight - learning_rate * (gradient + wd * weight)
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/preloaded_multi_sgd.cc:L140
- * \param data Weights, gradients, learning rates and weight decays
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \param num_weights Number of updated weights.
- * \return new symbol
- */
-inline Symbol preloaded_multi_mp_sgd_update(const std::vector<Symbol>& data,
-                                            mx_float rescale_grad = 1,
-                                            mx_float clip_gradient = -1,
-                                            int num_weights = 1) {
-  return Operator("preloaded_multi_mp_sgd_update")
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetParam("num_weights", num_weights)
-(data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Momentum update function for multi-precision Stochastic Gradient Descent (SGD)
- *
- *        Momentum update has better convergence rates on neural networks. Mathematically
- *        like below:
- *
- *        .. math::
- *
- *        v_1 = \alpha * \nabla J(W_0)\\
- *        v_t = \gamma v_{t-1} - \alpha * \nabla J(W_{t-1})\\
- *        W_t = W_{t-1} + v_t
- *
- *        It updates the weights using::
- *
- *        v = momentum * v - learning_rate * gradient
- *        weight += v
- *
- *        Where the parameter ``momentum`` is the decay rate of momentum estimates at
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/preloaded_multi_sgd.cc:L200
- * \param data Weights, gradients, momentums, learning rates and weight decays
- * \param momentum The decay rate of momentum estimates at each epoch.
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \param num_weights Number of updated weights.
- * \return new symbol
- */
-inline Symbol preloaded_multi_mp_sgd_mom_update(const std::vector<Symbol>& data,
-                                                mx_float momentum = 0,
-                                                mx_float rescale_grad = 1,
-                                                mx_float clip_gradient = -1,
-                                                int num_weights = 1) {
-  return Operator("preloaded_multi_mp_sgd_mom_update")
-           .SetParam("momentum", momentum)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetParam("num_weights", num_weights)
-(data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Set to zero multiple arrays
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/contrib/reset_arrays.cc:L36
- * \param data Arrays
- * \param num_arrays number of input arrays.
- * \return new symbol
- */
-inline Symbol reset_arrays(const std::vector<Symbol>& data,
-                           int num_arrays) {
-  return Operator("reset_arrays")
-           .SetParam("num_arrays", num_arrays)
-(data)
-           .CreateSymbol();
-}
-
-/*!
  * \brief Apply a custom operator implemented in a frontend language (like Python).
  *
  *        Custom operators should override required methods like `forward` and `backward`.
  *        The custom operator must be registered before it can be used.
- *        Please check the tutorial here:
+ *        Please check the tutorial here: http://mxnet.io/faq/new_op.html.
  *
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/custom/custom.cc:L546
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/custom/custom.cc:L546
  * \param data Input data for the custom operator.
  * \param op_type Name of the custom operator. This is the name that is passed to
  * \return new symbol
@@ -9916,9 +9239,10 @@ inline Symbol IdentityAttachKLSparseReg(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/leaky_relu.cc:L161
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/leaky_relu.cc:L65
  * \param data Input data to activation function.
- * \param gamma Input data to activation function.
+ * \param gamma Slope parameter for PReLU. Only required when act_type is 'prelu'. It
+ *        should be either a vector of size 1, or the same size as the second dimension
  * \param act_type Activation function to be applied.
  * \param slope Init slope for the activation. (For leaky and elu only)
  * \param lower_bound Lower bound of random slope. (For rrelu only)
@@ -9981,7 +9305,7 @@ inline Symbol LeakyReLU(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/loss_binary_op.cc:L59
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/loss_binary_op.cc:L59
  * \param data Input data
  * \param label Input label
  * \return new symbol
@@ -10008,7 +9332,7 @@ inline Symbol softmax_cross_entropy(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/activation.cc:L168
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/activation.cc:L167
  * \param data The input array.
  * \param act_type Activation function to be applied.
  * \return new symbol
@@ -10081,7 +9405,7 @@ inline Symbol Activation(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/batch_norm.cc:L571
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/batch_norm.cc:L572
  * \param data Input data to batch normalization
  * \param gamma gamma array
  * \param beta beta array
@@ -10094,10 +9418,6 @@ inline Symbol Activation(Symbol data,
  * \param output_mean_var Output the mean and inverse std
  * \param axis Specify which shape axis the channel is specified
  * \param cudnn_off Do not select CUDNN operator, if available
- * \param min_calib_range The minimum scalar value in the form of float32 obtained
- *        through calibration. If present, it will be used to by quantized batch norm op
- * \param max_calib_range The maximum scalar value in the form of float32 obtained
- *        through calibration. If present, it will be used to by quantized batch norm op
  * \return new symbol
  */
 inline Symbol BatchNorm(Symbol data,
@@ -10111,9 +9431,7 @@ inline Symbol BatchNorm(Symbol data,
                         bool use_global_stats = false,
                         bool output_mean_var = false,
                         int axis = 1,
-                        bool cudnn_off = false,
-                        dmlc::optional<float> min_calib_range = dmlc::optional<float>(),
-                        dmlc::optional<float> max_calib_range = dmlc::optional<float>()) {
+                        bool cudnn_off = false) {
   return Operator("BatchNorm")
            .SetParam("eps", eps)
            .SetParam("momentum", momentum)
@@ -10122,8 +9440,6 @@ inline Symbol BatchNorm(Symbol data,
            .SetParam("output_mean_var", output_mean_var)
            .SetParam("axis", axis)
            .SetParam("cudnn_off", cudnn_off)
-           .SetParam("min_calib_range", min_calib_range)
-           .SetParam("max_calib_range", max_calib_range)
            .SetInput("data", data)
            .SetInput("gamma", gamma)
            .SetInput("beta", beta)
@@ -10172,7 +9488,7 @@ inline Symbol BatchNorm(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/concat.cc:L383
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/concat.cc:L371
  * \param data List of arrays to concatenate
  * \param num_args Number of inputs to be concated.
  * \param dim the dimension to be concated.
@@ -10264,7 +9580,7 @@ inline Symbol Concat(const std::vector<Symbol>& data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/convolution.cc:L473
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/convolution.cc:L472
  * \param data Input data to the ConvolutionOp.
  * \param weight Weight matrix.
  * \param bias Bias parameter.
@@ -10380,7 +9696,7 @@ inline Symbol Convolution(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/ctc_loss.cc:L100
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/ctc_loss.cc:L100
  * \param data Input ndarray
  * \param label Ground-truth labels for the loss.
  * \param data_lengths Lengths of data for each of the samples. Only required when
@@ -10530,7 +9846,7 @@ inline Symbol Deconvolution(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/dropout.cc:L96
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/dropout.cc:L95
  * \param data Input array to which dropout will be applied.
  * \param p Fraction of the input that gets dropped out during training time.
  * \param mode Whether to only turn on dropout during training or to also turn on for
@@ -10590,7 +9906,7 @@ inline Symbol Dropout(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/fully_connected.cc:L291
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/fully_connected.cc:L277
  * \param data Input data.
  * \param weight Weight matrix.
  * \param bias Bias parameter.
@@ -10612,47 +9928,6 @@ inline Symbol FullyConnected(Symbol data,
            .SetInput("data", data)
            .SetInput("weight", weight)
            .SetInput("bias", bias)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Group normalization.
- *
- *        The input channels are separated into ``num_groups`` groups, each containing
- *        The mean and standard-deviation are calculated separately over the each group.
- *
- *        .. math::
- *
- *        data = data.reshape((N, num_groups, C // num_groups, ...))
- *        out = \frac{data - mean(data, axis)}{\sqrt{var(data, axis) + \epsilon}} * gamma
- *
- *        Both ``gamma`` and ``beta`` are learnable parameters.
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/group_norm.cc:L77
- * \param data Input data
- * \param gamma gamma array
- * \param beta beta array
- * \param num_groups Total number of groups.
- * \param eps An `epsilon` parameter to prevent division by 0.
- * \param output_mean_var Output the mean and std calculated along the given axis.
- * \return new symbol
- */
-inline Symbol GroupNorm(Symbol data,
-                        Symbol gamma,
-                        Symbol beta,
-                        int num_groups = 1,
-                        mx_float eps = 9.99999975e-06,
-                        bool output_mean_var = false) {
-  return Operator("GroupNorm")
-           .SetParam("num_groups", num_groups)
-           .SetParam("eps", eps)
-           .SetParam("output_mean_var", output_mean_var)
-           .SetInput("data", data)
-           .SetInput("gamma", gamma)
-           .SetInput("beta", beta)
            .CreateSymbol();
 }
 
@@ -10685,7 +9960,7 @@ inline Symbol GroupNorm(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/layer_norm.cc:L156
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/layer_norm.cc:L155
  * \param data Input data to layer normalization
  * \param gamma gamma array
  * \param beta beta array
@@ -10711,50 +9986,6 @@ inline Symbol LayerNorm(Symbol data,
 }
 
 /*!
- * \brief Computes the log softmax of the input.
- *        This is equivalent to computing softmax followed by log.
- *
- *        Examples::
- *
- *        >>> x = mx.nd.array([1, 2, .1])
- *        >>> mx.nd.log_softmax(x).asnumpy()
- *        array([-1.41702998, -0.41702995, -2.31702995], dtype=float32)
- *
- *        >>> x = mx.nd.array( [[1, 2, .1],[.1, 2, 1]] )
- *        >>> mx.nd.log_softmax(x, axis=0).asnumpy()
- *        array([[-0.34115392, -0.69314718, -1.24115396],
- *        [-1.24115396, -0.69314718, -0.34115392]], dtype=float32)
- *
- *
- *
- * \param data The input array.
- * \param axis The axis along which to compute softmax.
- * \param temperature Temperature parameter in softmax
- * \param dtype DType of the output in case this can't be inferred. Defaults to the same
- * \param use_length Whether to use the length input as a mask over the data input.
- * \return new symbol
- */
-inline Symbol log_softmax(Symbol data,
-                          int axis = -1,
-                          dmlc::optional<double> temperature = dmlc::optional<double>(),
-                          Log_softmaxDtype dtype = Log_softmaxDtype::kNone,
-                          dmlc::optional<bool> use_length = dmlc::optional<bool>(0)) {
-  static const char *Log_softmaxDtypeValues[] = {
-    "None",
-    "float16",
-    "float32",
-    "float64"
-  };
-  return Operator("log_softmax")
-           .SetParam("axis", axis)
-           .SetParam("temperature", temperature)
-           .SetParam("dtype", Log_softmaxDtypeValues[int(dtype)])
-           .SetParam("use_length", use_length)
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
  * \brief Applies local response normalization to the input.
  *
  *        The local response normalization layer performs "lateral inhibition" by
@@ -10773,7 +10004,7 @@ inline Symbol log_softmax(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/lrn.cc:L164
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/lrn.cc:L164
  * \param data Input data to LRN
  * \param nsize normalization window width in elements.
  * \param alpha The variance scaling parameter :math:`lpha` in the LRN expression.
@@ -10818,7 +10049,7 @@ inline Symbol LRN(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/moments.cc:L54
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/moments.cc:L54
  * \param data Input ndarray
  * \param axes Array of ints. Axes along which to compute mean and variance.
  * \param keepdims produce moments with the same dimensionality as the input.
@@ -10860,8 +10091,8 @@ inline Symbol moments(Symbol data,
  *
  *        f(x, k, p, s) = ceil((x+2*p-k)/s)+1
  *
- *        When ``global_pool`` is set to be true, then global pooling is performed. It
- *        ``kernel=(height, width)`` and set the appropiate padding to 0.
+ *        But ``global_pool`` is set to be true, then do a global pooling, namely reset
+ *        ``kernel=(height, width)``.
  *
  *        Three pooling options are supported by ``pool_type``:
  *
@@ -10887,7 +10118,7 @@ inline Symbol moments(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/pooling.cc:L417
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/pooling.cc:L416
  * \param data Input data to the pooling operator.
  * \param kernel Pooling kernel size: (y, x) or (d, y, x)
  * \param pool_type Pooling type to be applied.
@@ -10976,21 +10207,17 @@ inline Symbol Pooling(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/softmax.cc:L103
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/softmax.cc:L93
  * \param data The input array.
- * \param length The length array.
  * \param axis The axis along which to compute softmax.
  * \param temperature Temperature parameter in softmax
  * \param dtype DType of the output in case this can't be inferred. Defaults to the same
- * \param use_length Whether to use the length input as a mask over the data input.
  * \return new symbol
  */
 inline Symbol softmax(Symbol data,
-                      Symbol length,
                       int axis = -1,
                       dmlc::optional<double> temperature = dmlc::optional<double>(),
-                      SoftmaxDtype dtype = SoftmaxDtype::kNone,
-                      dmlc::optional<bool> use_length = dmlc::optional<bool>(0)) {
+                      SoftmaxDtype dtype = SoftmaxDtype::kNone) {
   static const char *SoftmaxDtypeValues[] = {
     "None",
     "float16",
@@ -11001,53 +10228,6 @@ inline Symbol softmax(Symbol data,
            .SetParam("axis", axis)
            .SetParam("temperature", temperature)
            .SetParam("dtype", SoftmaxDtypeValues[int(dtype)])
-           .SetParam("use_length", use_length)
-           .SetInput("data", data)
-           .SetInput("length", length)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Applies softmax activation to input. This is intended for internal layers.
- *
- *        .. note::
- *
- *        This operator has been deprecated, please use `softmax`.
- *
- *        If `mode` = ``instance``, this operator will compute a softmax for each
- *        This is the default mode.
- *
- *        If `mode` = ``channel``, this operator will compute a k-class softmax at each
- *        of each instance, where `k` = ``num_channel``. This mode can only be used when
- *        has at least 3 dimensions.
- *        This can be used for `fully convolutional network`, `image segmentation`, etc.
- *
- *        Example::
- *
- *        >>> input_array = mx.nd.array([[3., 0.5, -0.5, 2., 7.],
- *        >>>                            [2., -.4, 7.,   3., 0.2]])
- *        >>> softmax_act = mx.nd.SoftmaxActivation(input_array)
- *        >>> print softmax_act.asnumpy()
- *        [[  1.78322066e-02   1.46375655e-03   5.38485940e-04   6.56010211e-03
- *        [  6.56221947e-03   5.95310994e-04   9.73919690e-01   1.78379621e-02
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/softmax_activation.cc:L59
- * \param data The input array.
- * \param mode Specifies how to compute the softmax. If set to ``instance``, it computes
- *        softmax for each instance. If set to ``channel``, It computes cross channel
- * \return new symbol
- */
-inline Symbol SoftmaxActivation(Symbol data,
-                                SoftmaxActivationMode mode = SoftmaxActivationMode::kInstance) {
-  static const char *SoftmaxActivationModeValues[] = {
-    "channel",
-    "instance"
-  };
-  return Operator("SoftmaxActivation")
-           .SetParam("mode", SoftmaxActivationModeValues[int(mode)])
            .SetInput("data", data)
            .CreateSymbol();
 }
@@ -11079,19 +10259,17 @@ inline Symbol SoftmaxActivation(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/softmin.cc:L57
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/softmax.cc:L153
  * \param data The input array.
  * \param axis The axis along which to compute softmax.
  * \param temperature Temperature parameter in softmax
  * \param dtype DType of the output in case this can't be inferred. Defaults to the same
- * \param use_length Whether to use the length input as a mask over the data input.
  * \return new symbol
  */
 inline Symbol softmin(Symbol data,
                       int axis = -1,
                       dmlc::optional<double> temperature = dmlc::optional<double>(),
-                      SoftminDtype dtype = SoftminDtype::kNone,
-                      dmlc::optional<bool> use_length = dmlc::optional<bool>(0)) {
+                      SoftminDtype dtype = SoftminDtype::kNone) {
   static const char *SoftminDtypeValues[] = {
     "None",
     "float16",
@@ -11102,7 +10280,92 @@ inline Symbol softmin(Symbol data,
            .SetParam("axis", axis)
            .SetParam("temperature", temperature)
            .SetParam("dtype", SoftminDtypeValues[int(dtype)])
-           .SetParam("use_length", use_length)
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Computes the log softmax of the input.
+ *        This is equivalent to computing softmax followed by log.
+ *
+ *        Examples::
+ *
+ *        >>> x = mx.nd.array([1, 2, .1])
+ *        >>> mx.nd.log_softmax(x).asnumpy()
+ *        array([-1.41702998, -0.41702995, -2.31702995], dtype=float32)
+ *
+ *        >>> x = mx.nd.array( [[1, 2, .1],[.1, 2, 1]] )
+ *        >>> mx.nd.log_softmax(x, axis=0).asnumpy()
+ *        array([[-0.34115392, -0.69314718, -1.24115396],
+ *        [-1.24115396, -0.69314718, -0.34115392]], dtype=float32)
+ *
+ *
+ *
+ * \param data The input array.
+ * \param axis The axis along which to compute softmax.
+ * \param temperature Temperature parameter in softmax
+ * \param dtype DType of the output in case this can't be inferred. Defaults to the same
+ * \return new symbol
+ */
+inline Symbol log_softmax(Symbol data,
+                          int axis = -1,
+                          dmlc::optional<double> temperature = dmlc::optional<double>(),
+                          Log_softmaxDtype dtype = Log_softmaxDtype::kNone) {
+  static const char *Log_softmaxDtypeValues[] = {
+    "None",
+    "float16",
+    "float32",
+    "float64"
+  };
+  return Operator("log_softmax")
+           .SetParam("axis", axis)
+           .SetParam("temperature", temperature)
+           .SetParam("dtype", Log_softmaxDtypeValues[int(dtype)])
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Applies softmax activation to input. This is intended for internal layers.
+ *
+ *        .. note::
+ *
+ *        This operator has been deprecated, please use `softmax`.
+ *
+ *        If `mode` = ``instance``, this operator will compute a softmax for each
+ *        This is the default mode.
+ *
+ *        If `mode` = ``channel``, this operator will compute a k-class softmax at each
+ *        of each instance, where `k` = ``num_channel``. This mode can only be used when
+ *        has at least 3 dimensions.
+ *        This can be used for `fully convolutional network`, `image segmentation`, etc.
+ *
+ *        Example::
+ *
+ *        >>> input_array = mx.nd.array([[3., 0.5, -0.5, 2., 7.],
+ *        >>>                            [2., -.4, 7.,   3., 0.2]])
+ *        >>> softmax_act = mx.nd.SoftmaxActivation(input_array)
+ *        >>> print softmax_act.asnumpy()
+ *        [[  1.78322066e-02   1.46375655e-03   5.38485940e-04   6.56010211e-03
+ *        [  6.56221947e-03   5.95310994e-04   9.73919690e-01   1.78379621e-02
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/softmax_activation.cc:L59
+ * \param data The input array.
+ * \param mode Specifies how to compute the softmax. If set to ``instance``, it computes
+ *        softmax for each instance. If set to ``channel``, It computes cross channel
+ * \return new symbol
+ */
+inline Symbol SoftmaxActivation(Symbol data,
+                                SoftmaxActivationMode mode = SoftmaxActivationMode::kInstance) {
+  static const char *SoftmaxActivationModeValues[] = {
+    "channel",
+    "instance"
+  };
+  return Operator("SoftmaxActivation")
+           .SetParam("mode", SoftmaxActivationModeValues[int(mode)])
            .SetInput("data", data)
            .CreateSymbol();
 }
@@ -11160,7 +10423,7 @@ inline Symbol softmin(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/nn/upsampling.cc:L173
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/nn/upsampling.cc:L173
  * \param data Array of tensors to upsample. For bilinear upsampling, there should be 2
  * \param scale Up sampling scale
  * \param sample_type upsampling method
@@ -11216,7 +10479,7 @@ inline Symbol UpSampling(const std::vector<Symbol>& data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L63
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L61
  * \param weight Weight
  * \param grad Gradient
  * \param lr Learning rate
@@ -11263,7 +10526,7 @@ inline Symbol signsgd_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L92
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L90
  * \param weight Weight
  * \param grad Gradient
  * \param mom Momentum
@@ -11309,7 +10572,7 @@ inline Symbol signum_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L329
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L327
  * \param data Weights
  * \param lrs Learning rates.
  * \param wds Weight decay augments the objective function with a regularization term
@@ -11358,7 +10621,7 @@ inline Symbol multi_sgd_update(const std::vector<Symbol>& data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L374
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L372
  * \param data Weights, gradients and momentum
  * \param lrs Learning rates.
  * \param wds Weight decay augments the objective function with a regularization term
@@ -11398,7 +10661,7 @@ inline Symbol multi_sgd_mom_update(const std::vector<Symbol>& data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L417
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L415
  * \param data Weights
  * \param lrs Learning rates.
  * \param wds Weight decay augments the objective function with a regularization term
@@ -11447,7 +10710,7 @@ inline Symbol multi_mp_sgd_update(const std::vector<Symbol>& data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L472
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L470
  * \param data Weights
  * \param lrs Learning rates.
  * \param wds Weight decay augments the objective function with a regularization term
@@ -11493,7 +10756,7 @@ inline Symbol multi_mp_sgd_mom_update(const std::vector<Symbol>& data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L524
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L522
  * \param weight Weight
  * \param grad Gradient
  * \param lr Learning rate
@@ -11553,7 +10816,7 @@ inline Symbol sgd_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L565
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L563
  * \param weight Weight
  * \param grad Gradient
  * \param mom Momentum
@@ -11680,7 +10943,7 @@ inline Symbol mp_sgd_mom_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L640
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L638
  * \param weight Weight
  * \param grad Gradient
  * \param d Internal state ``d_t``
@@ -11760,7 +11023,7 @@ inline Symbol ftml_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L688
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L686
  * \param weight Weight
  * \param grad Gradient
  * \param mean Moving mean
@@ -11822,7 +11085,7 @@ inline Symbol adam_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L726
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L724
  * \param weight Weight
  * \param grad Gradient
  * \param mom Momentum
@@ -11860,7 +11123,7 @@ inline Symbol nag_mom_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L745
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L743
  * \param weight Weight
  * \param grad Gradient
  * \param mom Momentum
@@ -11933,7 +11196,7 @@ inline Symbol mp_nag_mom_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L797
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L795
  * \param weight Weight
  * \param grad Gradient
  * \param n n
@@ -11999,7 +11262,7 @@ inline Symbol rmsprop_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L836
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L834
  * \param weight Weight
  * \param grad Gradient
  * \param n n
@@ -12072,7 +11335,7 @@ inline Symbol rmspropalex_update(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L876
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/optimizer_op.cc:L874
  * \param weight Weight
  * \param grad Gradient
  * \param z z
@@ -12108,271 +11371,6 @@ inline Symbol ftrl_update(Symbol weight,
            .SetInput("grad", grad)
            .SetInput("z", z)
            .SetInput("n", n)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Phase I of lamb update it performs the following operations and returns g:.
- *
- *        Link to paper: https://arxiv.org/pdf/1904.00962.pdf
- *
- *        .. math::
- *        \begin{gather*}
- *        grad = grad * rescale_grad
- *        if (grad < -clip_gradient)
- *        then
- *        grad = -clip_gradient
- *        if (grad > clip_gradient)
- *        then
- *        grad = clip_gradient
- *
- *        mean = beta1 * mean + (1 - beta1) * grad;
- *        variance = beta2 * variance + (1. - beta2) * grad ^ 2;
- *
- *        if (bias_correction)
- *        then
- *        mean_hat = mean / (1. - beta1^t);
- *        var_hat = var / (1 - beta2^t);
- *        g = mean_hat / (var_hat^(1/2) + epsilon) + wd * weight;
- *        else
- *        g = mean / (var_data^(1/2) + epsilon) + wd * weight;
- *        \end{gather*}
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L953
- * \param weight Weight
- * \param grad Gradient
- * \param mean Moving mean
- * \param var Moving variance
- * \param t Index update count.
- * \param wd Weight decay augments the objective function with a regularization term that
- *        penalizes large weights. The penalty scales with the square of the magnitude of
- * \param beta1 The decay rate for the 1st moment estimates.
- * \param beta2 The decay rate for the 2nd moment estimates.
- * \param epsilon A small constant for numerical stability.
- * \param bias_correction Whether to use bias correction.
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \return new symbol
- */
-inline Symbol lamb_update_phase1(Symbol weight,
-                                 Symbol grad,
-                                 Symbol mean,
-                                 Symbol var,
-                                 int t,
-                                 mx_float wd,
-                                 mx_float beta1 = 0.899999976,
-                                 mx_float beta2 = 0.999000013,
-                                 mx_float epsilon = 9.99999997e-07,
-                                 bool bias_correction = true,
-                                 mx_float rescale_grad = 1,
-                                 mx_float clip_gradient = -1) {
-  return Operator("lamb_update_phase1")
-           .SetParam("t", t)
-           .SetParam("wd", wd)
-           .SetParam("beta1", beta1)
-           .SetParam("beta2", beta2)
-           .SetParam("epsilon", epsilon)
-           .SetParam("bias_correction", bias_correction)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetInput("weight", weight)
-           .SetInput("grad", grad)
-           .SetInput("mean", mean)
-           .SetInput("var", var)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Phase II of lamb update it performs the following operations and updates grad.
- *
- *        Link to paper: https://arxiv.org/pdf/1904.00962.pdf
- *
- *        .. math::
- *        \begin{gather*}
- *        if (lower_bound >= 0)
- *        then
- *        r1 = max(r1, lower_bound)
- *        if (upper_bound >= 0)
- *        then
- *        r1 = max(r1, upper_bound)
- *
- *        if (r1 == 0 or r2 == 0)
- *        then
- *        lr = lr
- *        else
- *        lr = lr * (r1/r2)
- *        weight = weight - lr * g
- *        \end{gather*}
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L992
- * \param weight Weight
- * \param g Output of lamb_update_phase 1
- * \param r1 r1
- * \param r2 r2
- * \param lr Learning rate
- * \param lower_bound Lower limit of norm of weight. If lower_bound <= 0, Lower limit is
- * \param upper_bound Upper limit of norm of weight. If upper_bound <= 0, Upper limit is
- * \return new symbol
- */
-inline Symbol lamb_update_phase2(Symbol weight,
-                                 Symbol g,
-                                 Symbol r1,
-                                 Symbol r2,
-                                 mx_float lr,
-                                 mx_float lower_bound = -1,
-                                 mx_float upper_bound = -1) {
-  return Operator("lamb_update_phase2")
-           .SetParam("lr", lr)
-           .SetParam("lower_bound", lower_bound)
-           .SetParam("upper_bound", upper_bound)
-           .SetInput("weight", weight)
-           .SetInput("g", g)
-           .SetInput("r1", r1)
-           .SetInput("r2", r2)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Mixed Precision version of Phase I of lamb update
- *        it performs the following operations and returns g:.
- *
- *        Link to paper: https://arxiv.org/pdf/1904.00962.pdf
- *
- *        .. math::
- *        \begin{gather*}
- *        grad32 = grad(float16) * rescale_grad
- *        if (grad < -clip_gradient)
- *        then
- *        grad = -clip_gradient
- *        if (grad > clip_gradient)
- *        then
- *        grad = clip_gradient
- *
- *        mean = beta1 * mean + (1 - beta1) * grad;
- *        variance = beta2 * variance + (1. - beta2) * grad ^ 2;
- *
- *        if (bias_correction)
- *        then
- *        mean_hat = mean / (1. - beta1^t);
- *        var_hat = var / (1 - beta2^t);
- *        g = mean_hat / (var_hat^(1/2) + epsilon) + wd * weight32;
- *        else
- *        g = mean / (var_data^(1/2) + epsilon) + wd * weight32;
- *        \end{gather*}
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L1033
- * \param weight Weight
- * \param grad Gradient
- * \param mean Moving mean
- * \param var Moving variance
- * \param weight32 Weight32
- * \param t Index update count.
- * \param wd Weight decay augments the objective function with a regularization term that
- *        penalizes large weights. The penalty scales with the square of the magnitude of
- * \param beta1 The decay rate for the 1st moment estimates.
- * \param beta2 The decay rate for the 2nd moment estimates.
- * \param epsilon A small constant for numerical stability.
- * \param bias_correction Whether to use bias correction.
- * \param rescale_grad Rescale gradient to grad = rescale_grad*grad.
- * \param clip_gradient Clip gradient to the range of [-clip_gradient, clip_gradient] If
- *        clip_gradient <= 0, gradient clipping is turned off. grad = max(min(grad,
- * \return new symbol
- */
-inline Symbol mp_lamb_update_phase1(Symbol weight,
-                                    Symbol grad,
-                                    Symbol mean,
-                                    Symbol var,
-                                    Symbol weight32,
-                                    int t,
-                                    mx_float wd,
-                                    mx_float beta1 = 0.899999976,
-                                    mx_float beta2 = 0.999000013,
-                                    mx_float epsilon = 9.99999997e-07,
-                                    bool bias_correction = true,
-                                    mx_float rescale_grad = 1,
-                                    mx_float clip_gradient = -1) {
-  return Operator("mp_lamb_update_phase1")
-           .SetParam("t", t)
-           .SetParam("wd", wd)
-           .SetParam("beta1", beta1)
-           .SetParam("beta2", beta2)
-           .SetParam("epsilon", epsilon)
-           .SetParam("bias_correction", bias_correction)
-           .SetParam("rescale_grad", rescale_grad)
-           .SetParam("clip_gradient", clip_gradient)
-           .SetInput("weight", weight)
-           .SetInput("grad", grad)
-           .SetInput("mean", mean)
-           .SetInput("var", var)
-           .SetInput("weight32", weight32)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Mixed Precision version Phase II of lamb update
- *        it performs the following operations and updates grad.
- *
- *        Link to paper: https://arxiv.org/pdf/1904.00962.pdf
- *
- *        .. math::
- *        \begin{gather*}
- *        if (lower_bound >= 0)
- *        then
- *        r1 = max(r1, lower_bound)
- *        if (upper_bound >= 0)
- *        then
- *        r1 = max(r1, upper_bound)
- *
- *        if (r1 == 0 or r2 == 0)
- *        then
- *        lr = lr
- *        else
- *        lr = lr * (r1/r2)
- *        weight32 = weight32 - lr * g
- *        weight(float16) = weight32
- *        \end{gather*}
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/optimizer_op.cc:L1075
- * \param weight Weight
- * \param g Output of mp_lamb_update_phase 1
- * \param r1 r1
- * \param r2 r2
- * \param weight32 Weight32
- * \param lr Learning rate
- * \param lower_bound Lower limit of norm of weight. If lower_bound <= 0, Lower limit is
- * \param upper_bound Upper limit of norm of weight. If upper_bound <= 0, Upper limit is
- * \return new symbol
- */
-inline Symbol mp_lamb_update_phase2(Symbol weight,
-                                    Symbol g,
-                                    Symbol r1,
-                                    Symbol r2,
-                                    Symbol weight32,
-                                    mx_float lr,
-                                    mx_float lower_bound = -1,
-                                    mx_float upper_bound = -1) {
-  return Operator("mp_lamb_update_phase2")
-           .SetParam("lr", lr)
-           .SetParam("lower_bound", lower_bound)
-           .SetParam("upper_bound", upper_bound)
-           .SetInput("weight", weight)
-           .SetInput("g", g)
-           .SetInput("r1", r1)
-           .SetInput("r2", r2)
-           .SetInput("weight32", weight32)
            .CreateSymbol();
 }
 
@@ -12461,7 +11459,7 @@ inline Symbol mp_lamb_update_phase2(Symbol weight,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/pad.cc:L766
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/pad.cc:L766
  * \param data An n-dimensional input array.
  * \param mode Padding type to use. "constant" pads with `constant_value` "edge" pads
  *        using the edge values of the input array "reflect" pads by reflecting values
@@ -12491,12 +11489,17 @@ inline Symbol Pad(Symbol data,
 
 /*!
  * \brief Flattens the input array into a 2-D array by collapsing the higher dimensions.
+ *
  *        .. note:: `Flatten` is deprecated. Use `flatten` instead.
+ *
  *        For an input array with shape ``(d1, d2, ..., dk)``, `flatten` operation
  *        the input array into an output array of shape ``(d1, d2*...*dk)``.
- *        Note that the behavior of this function is different from numpy.ndarray.flatten,
+ *
+ *        Note that the bahavior of this function is different from numpy.ndarray.flatten,
  *        which behaves similar to mxnet.ndarray.reshape((-1,)).
+ *
  *        Example::
+ *
  *        x = [[
  *        [1,2,3],
  *        [4,5,6],
@@ -12506,12 +11509,14 @@ inline Symbol Pad(Symbol data,
  *        [4,5,6],
  *        [7,8,9]
  *        ]],
+ *
  *        flatten(x) = [[ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.],
  *        [ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.]]
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L250
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L291
  * \param data Input array.
  * \return new symbol
  */
@@ -12544,7 +11549,7 @@ inline Symbol Flatten(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/regression_output.cc:L92
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/regression_output.cc:L92
  * \param data Input data to the function.
  * \param label Input label to the function.
  * \param grad_scale Scale the gradient by a float factor
@@ -12584,7 +11589,7 @@ inline Symbol LinearRegressionOutput(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/regression_output.cc:L120
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/regression_output.cc:L120
  * \param data Input data to the function.
  * \param label Input label to the function.
  * \param grad_scale Scale the gradient by a float factor
@@ -12630,7 +11635,7 @@ inline Symbol MAERegressionOutput(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/regression_output.cc:L152
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/regression_output.cc:L152
  * \param data Input data to the function.
  * \param label Input label to the function.
  * \param grad_scale Scale the gradient by a float factor
@@ -12703,7 +11708,7 @@ inline Symbol LogisticRegressionOutput(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/rnn.cc:L354
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/rnn.cc:L690
  * \param data Input data to RNN
  * \param parameters Vector of all RNN trainable parameters concatenated
  * \param state initial hidden state of the RNN
@@ -12760,166 +11765,6 @@ inline Symbol RNN(Symbol data,
            .SetInput("parameters", parameters)
            .SetInput("state", state)
            .SetInput("state_cell", state_cell)
-           .SetInput("sequence_length", sequence_length)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Performs region of interest(ROI) pooling on the input array.
- *
- *        ROI pooling is a variant of a max pooling layer, in which the output size is
- *        region of interest is a parameter. Its purpose is to perform max pooling on the
- *        of non-uniform sizes to obtain fixed-size feature maps. ROI pooling is a
- *        layer mostly used in training a `Fast R-CNN` network for object detection.
- *
- *        This operator takes a 4D feature map as an input array and region proposals as
- *        then it pools over sub-regions of input and produces a fixed-sized output array
- *        regardless of the ROI size.
- *
- *        To crop the feature map accordingly, you can resize the bounding box coordinates
- *        by changing the parameters `rois` and `spatial_scale`.
- *
- *        The cropped feature maps are pooled by standard max pooling operation to a
- *        indicated by a `pooled_size` parameter. batch_size will change to the number of
- *        bounding boxes after `ROIPooling`.
- *
- *        The size of each region of interest doesn't have to be perfectly divisible by
- *        the number of pooling sections(`pooled_size`).
- *
- *        Example::
- *
- *        x = [[[[  0.,   1.,   2.,   3.,   4.,   5.],
- *        [  6.,   7.,   8.,   9.,  10.,  11.],
- *        [ 12.,  13.,  14.,  15.,  16.,  17.],
- *        [ 18.,  19.,  20.,  21.,  22.,  23.],
- *        [ 24.,  25.,  26.,  27.,  28.,  29.],
- *        [ 30.,  31.,  32.,  33.,  34.,  35.],
- *        [ 36.,  37.,  38.,  39.,  40.,  41.],
- *        [ 42.,  43.,  44.,  45.,  46.,  47.]]]]
- *
- *        // region of interest i.e. bounding box coordinates.
- *        y = [[0,0,0,4,4]]
- *
- *        // returns array of shape (2,2) according to the given roi with max pooling.
- *        ROIPooling(x, y, (2,2), 1.0) = [[[[ 14.,  16.],
- *        [ 26.,  28.]]]]
- *
- *        // region of interest is changed due to the change in `spacial_scale` parameter.
- *        ROIPooling(x, y, (2,2), 0.7) = [[[[  7.,   9.],
- *        [ 19.,  21.]]]]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/roi_pooling.cc:L225
- * \param data The input array to the pooling operator,  a 4D Feature maps
- * \param rois Bounding box coordinates, a 2D array of [[batch_index, x1, y1, x2, y2]],
- *        where (x1, y1) and (x2, y2) are top left and bottom right corners of designated
- *        region of interest. `batch_index` indicates the index of corresponding image in
- * \param pooled_size ROI pooling output shape (h,w)
- * \param spatial_scale Ratio of input feature map height (or w) to raw image height (or
- * \return new symbol
- */
-inline Symbol ROIPooling(Symbol data,
-                         Symbol rois,
-                         Shape pooled_size,
-                         mx_float spatial_scale) {
-  return Operator("ROIPooling")
-           .SetParam("pooled_size", pooled_size)
-           .SetParam("spatial_scale", spatial_scale)
-           .SetInput("data", data)
-           .SetInput("rois", rois)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Sets all elements outside the sequence to a constant value.
- *
- *        This function takes an n-dimensional input array of the form
- *        [max_sequence_length, batch_size, other_feature_dims] and returns an array of
- *
- *        Parameter `sequence_length` is used to handle variable-length sequences.
- *        should be an input array of positive ints of dimension [batch_size].
- *        To use this parameter, set `use_sequence_length` to `True`,
- *        otherwise each example in the batch is assumed to have the max sequence length
- *        this operator works as the `identity` operator.
- *
- *        Example::
- *
- *        x = [[[  1.,   2.,   3.],
- *        [  4.,   5.,   6.]],
- *
- *        [[  7.,   8.,   9.],
- *        [ 10.,  11.,  12.]],
- *
- *        [[ 13.,  14.,   15.],
- *        [ 16.,  17.,   18.]]]
- *
- *        // Batch 1
- *        B1 = [[  1.,   2.,   3.],
- *        [  7.,   8.,   9.],
- *        [ 13.,  14.,  15.]]
- *
- *        // Batch 2
- *        B2 = [[  4.,   5.,   6.],
- *        [ 10.,  11.,  12.],
- *        [ 16.,  17.,  18.]]
- *
- *        // works as identity operator when sequence_length parameter is not used
- *        SequenceMask(x) = [[[  1.,   2.,   3.],
- *        [  4.,   5.,   6.]],
- *
- *        [[  7.,   8.,   9.],
- *        [ 10.,  11.,  12.]],
- *
- *        [[ 13.,  14.,   15.],
- *        [ 16.,  17.,   18.]]]
- *
- *        // sequence_length [1,1] means 1 of each batch will be kept
- *        // and other rows are masked with default mask value = 0
- *        SequenceMask(x, sequence_length=[1,1], use_sequence_length=True) =
- *        [[[  1.,   2.,   3.],
- *        [  4.,   5.,   6.]],
- *
- *        [[  0.,   0.,   0.],
- *        [  0.,   0.,   0.]],
- *
- *        [[  0.,   0.,   0.],
- *        [  0.,   0.,   0.]]]
- *
- *        // sequence_length [2,3] means 2 of batch B1 and 3 of batch B2 will be kept
- *        // and other rows are masked with value = 1
- *        SequenceMask(x, sequence_length=[2,3], use_sequence_length=True, value=1) =
- *        [[[  1.,   2.,   3.],
- *        [  4.,   5.,   6.]],
- *
- *        [[  7.,   8.,   9.],
- *        [  10.,  11.,  12.]],
- *
- *        [[   1.,   1.,   1.],
- *        [  16.,  17.,  18.]]]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/sequence_mask.cc:L186
- * \param data n-dimensional input array of the form [max_sequence_length, batch_size,
- * \param sequence_length vector of sequence lengths of the form [batch_size]
- * \param use_sequence_length If set to true, this layer takes in an extra input
- * \param value The value to be used as a mask.
- * \param axis The sequence axis. Only values of 0 and 1 are currently supported.
- * \return new symbol
- */
-inline Symbol SequenceMask(Symbol data,
-                           Symbol sequence_length,
-                           bool use_sequence_length = false,
-                           mx_float value = 0,
-                           int axis = 0) {
-  return Operator("SequenceMask")
-           .SetParam("use_sequence_length", use_sequence_length)
-           .SetParam("value", value)
-           .SetParam("axis", axis)
-           .SetInput("data", data)
            .SetInput("sequence_length", sequence_length)
            .CreateSymbol();
 }
@@ -12986,7 +11831,7 @@ inline Symbol SequenceMask(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/slice_channel.cc:L107
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/slice_channel.cc:L107
  * \param data The input
  * \param num_outputs Number of splits. Note that this should evenly divide the length of
  * \param axis Axis along which to split.
@@ -13086,7 +11931,7 @@ inline Symbol SliceChannel(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/softmax_output.cc:L231
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/softmax_output.cc:L230
  * \param data Input array.
  * \param label Ground truth label.
  * \param grad_scale Scales the gradient by a float factor.
@@ -13153,15 +11998,15 @@ inline Symbol SoftmaxOutput(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/swapaxis.cc:L70
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/swapaxis.cc:L70
  * \param data Input array.
  * \param dim1 the first axis to be swapped.
  * \param dim2 the second axis to be swapped.
  * \return new symbol
  */
 inline Symbol SwapAxis(Symbol data,
-                       int dim1 = 0,
-                       int dim2 = 0) {
+                       uint32_t dim1 = 0,
+                       uint32_t dim2 = 0) {
   return Operator("SwapAxis")
            .SetParam("dim1", dim1)
            .SetParam("dim2", dim2)
@@ -13176,7 +12021,7 @@ inline Symbol SwapAxis(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/amp_cast.cc:L37
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/amp_cast.cc:L37
  * \param data The input.
  * \param dtype Output data type.
  * \return new symbol
@@ -13206,158 +12051,16 @@ inline Symbol amp_cast(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/amp_cast.cc:L71
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/amp_cast.cc:L71
  * \param data Weights
  * \param num_outputs Number of input/output pairs to be casted to the widest type.
- * \param cast_narrow Whether to cast to the narrowest type
  * \return new symbol
  */
 inline Symbol amp_multicast(const std::vector<Symbol>& data,
-                            int num_outputs,
-                            bool cast_narrow = false) {
+                            int num_outputs) {
   return Operator("amp_multicast")
            .SetParam("num_outputs", num_outputs)
-           .SetParam("cast_narrow", cast_narrow)
 (data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Computes the max of array elements over given axes.
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/./broadcast_reduce_op.h:L32
- * \param data The input
- * \param axis The axis or axes along which to perform the reduction.
- *
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *
- *        If `axis` is int, a reduction is performed on a particular axis.
- *
- *        If `axis` is a tuple of ints, a reduction is performed on all the axes
- *        specified in the tuple.
- *
- *        If `exclude` is true, reduction will be performed on the axes that are
- *        NOT in axis instead.
- *
- *        Negative values means indexing from right to left.
- * \param keepdims If this is set to `True`, the reduced axes are left in the result as
- * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
- * \return new symbol
- */
-inline Symbol max(Symbol data,
-                  dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                  bool keepdims = false,
-                  bool exclude = false) {
-  return Operator("max")
-           .SetParam("axis", axis)
-           .SetParam("keepdims", keepdims)
-           .SetParam("exclude", exclude)
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Computes the min of array elements over given axes.
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/./broadcast_reduce_op.h:L47
- * \param data The input
- * \param axis The axis or axes along which to perform the reduction.
- *
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *
- *        If `axis` is int, a reduction is performed on a particular axis.
- *
- *        If `axis` is a tuple of ints, a reduction is performed on all the axes
- *        specified in the tuple.
- *
- *        If `exclude` is true, reduction will be performed on the axes that are
- *        NOT in axis instead.
- *
- *        Negative values means indexing from right to left.
- * \param keepdims If this is set to `True`, the reduced axes are left in the result as
- * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
- * \return new symbol
- */
-inline Symbol min(Symbol data,
-                  dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                  bool keepdims = false,
-                  bool exclude = false) {
-  return Operator("min")
-           .SetParam("axis", axis)
-           .SetParam("keepdims", keepdims)
-           .SetParam("exclude", exclude)
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Computes the norm on an NDArray.
- *
- *        This operator computes the norm on an NDArray with the specified axis, depending
- *        on the value of the ord parameter. By default, it computes the L2 norm on the
- *        array. Currently only ord=2 supports sparse ndarrays.
- *
- *        Examples::
- *
- *        x = [[[1, 2],
- *        [3, 4]],
- *        [[2, 2],
- *        [5, 6]]]
- *
- *        norm(x, ord=2, axis=1) = [[3.1622777 4.472136 ]
- *        [5.3851647 6.3245554]]
- *
- *        norm(x, ord=1, axis=1) = [[4., 6.],
- *        [7., 8.]]
- *
- *        rsp = x.cast_storage('row_sparse')
- *
- *        norm(rsp) = [5.47722578]
- *
- *        csr = x.cast_storage('csr')
- *
- *        norm(csr) = [5.47722578]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_norm_value.cc:L89
- * \param data The input
- * \param ord Order of the norm. Currently ord=1 and ord=2 is supported.
- * \param axis The axis or axes along which to perform the reduction.
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *        If `axis` is int, a reduction is performed on a particular axis.
- *        If `axis` is a 2-tuple, it specifies the axes that hold 2-D matrices,
- *        and the matrix norms of these matrices are computed.
- * \param out_dtype The data type of the output.
- * \param keepdims If this is set to `True`, the reduced axis is left in the result as
- * \return new symbol
- */
-inline Symbol norm(Symbol data,
-                   int ord = 2,
-                   dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                   NormOutDtype out_dtype = NormOutDtype::kNone,
-                   bool keepdims = false) {
-  static const char *NormOutDtypeValues[] = {
-    "None",
-    "float16",
-    "float32",
-    "float64",
-    "int32",
-    "int64",
-    "int8"
-  };
-  return Operator("norm")
-           .SetParam("ord", ord)
-           .SetParam("axis", axis)
-           .SetParam("out_dtype", NormOutDtypeValues[int(out_dtype)])
-           .SetParam("keepdims", keepdims)
-           .SetInput("data", data)
            .CreateSymbol();
 }
 
@@ -13385,7 +12088,7 @@ inline Symbol norm(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L52
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L52
  * \param data The input
  * \param axis The axis along which to perform the reduction. Negative values means
  *        indexing from right to left. ``Requires axis to be set as int, because global
@@ -13426,7 +12129,7 @@ inline Symbol argmax(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L77
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L77
  * \param data The input
  * \param axis The axis along which to perform the reduction. Negative values means
  *        indexing from right to left. ``Requires axis to be set as int, because global
@@ -13461,7 +12164,7 @@ inline Symbol argmin(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L97
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L97
  * \param data The input array
  * \return new symbol
  */
@@ -13516,7 +12219,7 @@ inline Symbol argmax_channel(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L155
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_index.cc:L154
  * \param data The input array
  * \param index The index array
  * \param axis int or None. The axis to picking the elements. Negative values means
@@ -13542,197 +12245,6 @@ inline Symbol pick(Symbol data,
            .SetParam("mode", PickModeValues[int(mode)])
            .SetInput("data", data)
            .SetInput("index", index)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Broadcasts the input array over particular axes.
- *
- *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
- *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
- *
- *        `broadcast_axes` is an alias to the function `broadcast_axis`.
- *
- *        Example::
- *
- *        // given x of shape (1,2,1)
- *        x = [[[ 1.],
- *        [ 2.]]]
- *
- *        // broadcast x on on axis 2
- *        broadcast_axis(x, axis=2, size=3) = [[[ 1.,  1.,  1.],
- *        [ 2.,  2.,  2.]]]
- *        // broadcast x on on axes 0 and 2
- *        broadcast_axis(x, axis=(0,2), size=(2,3)) = [[[ 1.,  1.,  1.],
- *        [ 2.,  2.,  2.]],
- *        [[ 1.,  1.,  1.],
- *        [ 2.,  2.,  2.]]]
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L58
- * \param data The input
- * \param axis The axes to perform the broadcasting.
- * \param size Target sizes of the broadcasting axes.
- * \return new symbol
- */
-inline Symbol broadcast_axis(Symbol data,
-                             Shape axis = Shape(),
-                             Shape size = Shape()) {
-  return Operator("broadcast_axis")
-           .SetParam("axis", axis)
-           .SetParam("size", size)
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Broadcasts the input array to a new shape.
- *
- *        Broadcasting is a mechanism that allows NDArrays to perform arithmetic
- *        with arrays of different shapes efficiently without creating multiple copies of
- *        Also see, `Broadcasting
- *        <https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_ for more
- *
- *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
- *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
- *
- *        For example::
- *
- *        broadcast_to([[1,2,3]], shape=(2,3)) = [[ 1.,  2.,  3.],
- *        [ 1.,  2.,  3.]])
- *
- *        The dimension which you do not want to change can also be kept as `0` which
- *        So with `shape=(2,0)`, we will obtain the same result as in the above example.
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L82
- * \param data The input
- * \param shape The shape of the desired array. We can set the dim to zero if it's same
- *        as the original. E.g `A = broadcast_to(B, shape=(10, 0, 0))` has the same
- * \return new symbol
- */
-inline Symbol broadcast_to(Symbol data,
-                           Shape shape = Shape()) {
-  return Operator("broadcast_to")
-           .SetParam("shape", shape)
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Broadcasts lhs to have the same shape as rhs.
- *
- *        Broadcasting is a mechanism that allows NDArrays to perform arithmetic
- *        with arrays of different shapes efficiently without creating multiple copies of
- *        Also see, `Broadcasting
- *        <https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_ for more
- *
- *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
- *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
- *
- *        For example::
- *
- *        broadcast_like([[1,2,3]], [[5,6,7],[7,8,9]]) = [[ 1.,  2.,  3.],
- *        [ 1.,  2.,  3.]])
- *
- *        broadcast_like([9], [1,2,3,4,5], lhs_axes=(0,), rhs_axes=(-1,)) = [9,9,9,9,9]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L135
- * \param lhs First input.
- * \param rhs Second input.
- * \param lhs_axes Axes to perform broadcast on in the first input array
- * \param rhs_axes Axes to copy from the second input array
- * \return new symbol
- */
-inline Symbol broadcast_like(Symbol lhs,
-                             Symbol rhs,
-                             dmlc::optional<Shape> lhs_axes = dmlc::optional<Shape>(),
-                             dmlc::optional<Shape> rhs_axes = dmlc::optional<Shape>()) {
-  return Operator("broadcast_like")
-           .SetParam("lhs_axes", lhs_axes)
-           .SetParam("rhs_axes", rhs_axes)
-           .SetInput("lhs", lhs)
-           .SetInput("rhs", rhs)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Computes the product of array elements over given axes.
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/./broadcast_reduce_op.h:L31
- * \param data The input
- * \param axis The axis or axes along which to perform the reduction.
- *
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *
- *        If `axis` is int, a reduction is performed on a particular axis.
- *
- *        If `axis` is a tuple of ints, a reduction is performed on all the axes
- *        specified in the tuple.
- *
- *        If `exclude` is true, reduction will be performed on the axes that are
- *        NOT in axis instead.
- *
- *        Negative values means indexing from right to left.
- * \param keepdims If this is set to `True`, the reduced axes are left in the result as
- * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
- * \return new symbol
- */
-inline Symbol prod(Symbol data,
-                   dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                   bool keepdims = false,
-                   bool exclude = false) {
-  return Operator("prod")
-           .SetParam("axis", axis)
-           .SetParam("keepdims", keepdims)
-           .SetParam("exclude", exclude)
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Computes the product of array elements over given axes treating Not a Numbers
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_prod_value.cc:L47
- * \param data The input
- * \param axis The axis or axes along which to perform the reduction.
- *
- *        The default, `axis=()`, will compute over all elements into a
- *        scalar array with shape `(1,)`.
- *
- *        If `axis` is int, a reduction is performed on a particular axis.
- *
- *        If `axis` is a tuple of ints, a reduction is performed on all the axes
- *        specified in the tuple.
- *
- *        If `exclude` is true, reduction will be performed on the axes that are
- *        NOT in axis instead.
- *
- *        Negative values means indexing from right to left.
- * \param keepdims If this is set to `True`, the reduced axes are left in the result as
- * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
- * \return new symbol
- */
-inline Symbol nanprod(Symbol data,
-                      dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
-                      bool keepdims = false,
-                      bool exclude = false) {
-  return Operator("nanprod")
-           .SetParam("axis", axis)
-           .SetParam("keepdims", keepdims)
-           .SetParam("exclude", exclude)
-           .SetInput("data", data)
            .CreateSymbol();
 }
 
@@ -13774,7 +12286,7 @@ inline Symbol nanprod(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_sum_value.cc:L67
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L116
  * \param data The input
  * \param axis The axis or axes along which to perform the reduction.
  *
@@ -13810,7 +12322,7 @@ inline Symbol sum(Symbol data,
  * \brief Computes the mean of array elements over given axes.
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/./broadcast_reduce_op.h:L84
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L132
  * \param data The input
  * \param axis The axis or axes along which to perform the reduction.
  *
@@ -13843,12 +12355,48 @@ inline Symbol mean(Symbol data,
 }
 
 /*!
+ * \brief Computes the product of array elements over given axes.
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L147
+ * \param data The input
+ * \param axis The axis or axes along which to perform the reduction.
+ *
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *
+ *        If `axis` is a tuple of ints, a reduction is performed on all the axes
+ *        specified in the tuple.
+ *
+ *        If `exclude` is true, reduction will be performed on the axes that are
+ *        NOT in axis instead.
+ *
+ *        Negative values means indexing from right to left.
+ * \param keepdims If this is set to `True`, the reduced axes are left in the result as
+ * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
+ * \return new symbol
+ */
+inline Symbol prod(Symbol data,
+                   dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                   bool keepdims = false,
+                   bool exclude = false) {
+  return Operator("prod")
+           .SetParam("axis", axis)
+           .SetParam("keepdims", keepdims)
+           .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
  * \brief Computes the sum of array elements over given axes treating Not a Numbers
  *
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/broadcast_reduce_sum_value.cc:L102
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L162
  * \param data The input
  * \param axis The axis or axes along which to perform the reduction.
  *
@@ -13876,6 +12424,298 @@ inline Symbol nansum(Symbol data,
            .SetParam("axis", axis)
            .SetParam("keepdims", keepdims)
            .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Computes the product of array elements over given axes treating Not a Numbers
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L177
+ * \param data The input
+ * \param axis The axis or axes along which to perform the reduction.
+ *
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *
+ *        If `axis` is a tuple of ints, a reduction is performed on all the axes
+ *        specified in the tuple.
+ *
+ *        If `exclude` is true, reduction will be performed on the axes that are
+ *        NOT in axis instead.
+ *
+ *        Negative values means indexing from right to left.
+ * \param keepdims If this is set to `True`, the reduced axes are left in the result as
+ * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
+ * \return new symbol
+ */
+inline Symbol nanprod(Symbol data,
+                      dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                      bool keepdims = false,
+                      bool exclude = false) {
+  return Operator("nanprod")
+           .SetParam("axis", axis)
+           .SetParam("keepdims", keepdims)
+           .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Computes the max of array elements over given axes.
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L191
+ * \param data The input
+ * \param axis The axis or axes along which to perform the reduction.
+ *
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *
+ *        If `axis` is a tuple of ints, a reduction is performed on all the axes
+ *        specified in the tuple.
+ *
+ *        If `exclude` is true, reduction will be performed on the axes that are
+ *        NOT in axis instead.
+ *
+ *        Negative values means indexing from right to left.
+ * \param keepdims If this is set to `True`, the reduced axes are left in the result as
+ * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
+ * \return new symbol
+ */
+inline Symbol max(Symbol data,
+                  dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                  bool keepdims = false,
+                  bool exclude = false) {
+  return Operator("max")
+           .SetParam("axis", axis)
+           .SetParam("keepdims", keepdims)
+           .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Computes the min of array elements over given axes.
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L205
+ * \param data The input
+ * \param axis The axis or axes along which to perform the reduction.
+ *
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *
+ *        If `axis` is a tuple of ints, a reduction is performed on all the axes
+ *        specified in the tuple.
+ *
+ *        If `exclude` is true, reduction will be performed on the axes that are
+ *        NOT in axis instead.
+ *
+ *        Negative values means indexing from right to left.
+ * \param keepdims If this is set to `True`, the reduced axes are left in the result as
+ * \param exclude Whether to perform reduction on axis that are NOT in axis instead.
+ * \return new symbol
+ */
+inline Symbol min(Symbol data,
+                  dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                  bool keepdims = false,
+                  bool exclude = false) {
+  return Operator("min")
+           .SetParam("axis", axis)
+           .SetParam("keepdims", keepdims)
+           .SetParam("exclude", exclude)
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Broadcasts the input array over particular axes.
+ *
+ *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
+ *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
+ *
+ *        Example::
+ *
+ *        // given x of shape (1,2,1)
+ *        x = [[[ 1.],
+ *        [ 2.]]]
+ *
+ *        // broadcast x on on axis 2
+ *        broadcast_axis(x, axis=2, size=3) = [[[ 1.,  1.,  1.],
+ *        [ 2.,  2.,  2.]]]
+ *        // broadcast x on on axes 0 and 2
+ *        broadcast_axis(x, axis=(0,2), size=(2,3)) = [[[ 1.,  1.,  1.],
+ *        [ 2.,  2.,  2.]],
+ *        [[ 1.,  1.,  1.],
+ *        [ 2.,  2.,  2.]]]
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L238
+ * \param data The input
+ * \param axis The axes to perform the broadcasting.
+ * \param size Target sizes of the broadcasting axes.
+ * \return new symbol
+ */
+inline Symbol broadcast_axis(Symbol data,
+                             Shape axis = Shape(),
+                             Shape size = Shape()) {
+  return Operator("broadcast_axis")
+           .SetParam("axis", axis)
+           .SetParam("size", size)
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Broadcasts the input array to a new shape.
+ *
+ *        Broadcasting is a mechanism that allows NDArrays to perform arithmetic
+ *        with arrays of different shapes efficiently without creating multiple copies of
+ *        Also see, `Broadcasting
+ *        <https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_ for more
+ *
+ *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
+ *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
+ *
+ *        For example::
+ *
+ *        broadcast_to([[1,2,3]], shape=(2,3)) = [[ 1.,  2.,  3.],
+ *        [ 1.,  2.,  3.]])
+ *
+ *        The dimension which you do not want to change can also be kept as `0` which
+ *        So with `shape=(2,0)`, we will obtain the same result as in the above example.
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L262
+ * \param data The input
+ * \param shape The shape of the desired array. We can set the dim to zero if it's same
+ *        as the original. E.g `A = broadcast_to(B, shape=(10, 0, 0))` has the same
+ * \return new symbol
+ */
+inline Symbol broadcast_to(Symbol data,
+                           Shape shape = Shape()) {
+  return Operator("broadcast_to")
+           .SetParam("shape", shape)
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Broadcasts lhs to have the same shape as rhs.
+ *
+ *        Broadcasting is a mechanism that allows NDArrays to perform arithmetic
+ *        with arrays of different shapes efficiently without creating multiple copies of
+ *        Also see, `Broadcasting
+ *        <https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_ for more
+ *
+ *        Broadcasting is allowed on axes with size 1, such as from `(2,1,3,1)` to
+ *        `(2,8,3,9)`. Elements will be duplicated on the broadcasted axes.
+ *
+ *        For example::
+ *
+ *        broadcast_like([[1,2,3]], [[5,6,7],[7,8,9]]) = [[ 1.,  2.,  3.],
+ *        [ 1.,  2.,  3.]])
+ *
+ *        broadcast_like([9], [1,2,3,4,5], lhs_axes=(0,), rhs_axes=(-1,)) = [9,9,9,9,9]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L315
+ * \param lhs First input.
+ * \param rhs Second input.
+ * \param lhs_axes Axes to perform broadcast on in the first input array
+ * \param rhs_axes Axes to copy from the second input array
+ * \return new symbol
+ */
+inline Symbol broadcast_like(Symbol lhs,
+                             Symbol rhs,
+                             dmlc::optional<Shape> lhs_axes = dmlc::optional<Shape>(),
+                             dmlc::optional<Shape> rhs_axes = dmlc::optional<Shape>()) {
+  return Operator("broadcast_like")
+           .SetParam("lhs_axes", lhs_axes)
+           .SetParam("rhs_axes", rhs_axes)
+           .SetInput("lhs", lhs)
+           .SetInput("rhs", rhs)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Computes the norm on an NDArray.
+ *
+ *        This operator computes the norm on an NDArray with the specified axis, depending
+ *        on the value of the ord parameter. By default, it computes the L2 norm on the
+ *        array. Currently only ord=2 supports sparse ndarrays.
+ *
+ *        Examples::
+ *
+ *        x = [[[1, 2],
+ *        [3, 4]],
+ *        [[2, 2],
+ *        [5, 6]]]
+ *
+ *        norm(x, ord=2, axis=1) = [[3.1622777 4.472136 ]
+ *        [5.3851647 6.3245554]]
+ *
+ *        norm(x, ord=1, axis=1) = [[4., 6.],
+ *        [7., 8.]]
+ *
+ *        rsp = x.cast_storage('row_sparse')
+ *
+ *        norm(rsp) = [5.47722578]
+ *
+ *        csr = x.cast_storage('csr')
+ *
+ *        norm(csr) = [5.47722578]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/broadcast_reduce_op_value.cc:L350
+ * \param data The input
+ * \param ord Order of the norm. Currently ord=1 and ord=2 is supported.
+ * \param axis The axis or axes along which to perform the reduction.
+ *        The default, `axis=()`, will compute over all elements into a
+ *        scalar array with shape `(1,)`.
+ *        If `axis` is int, a reduction is performed on a particular axis.
+ *        If `axis` is a 2-tuple, it specifies the axes that hold 2-D matrices,
+ *        and the matrix norms of these matrices are computed.
+ * \param out_dtype The data type of the output.
+ * \param keepdims If this is set to `True`, the reduced axis is left in the result as
+ * \return new symbol
+ */
+inline Symbol norm(Symbol data,
+                   int ord = 2,
+                   dmlc::optional<Shape> axis = dmlc::optional<Shape>(),
+                   NormOutDtype out_dtype = NormOutDtype::kNone,
+                   bool keepdims = false) {
+  static const char *NormOutDtypeValues[] = {
+    "None",
+    "float16",
+    "float32",
+    "float64",
+    "int32",
+    "int64",
+    "int8"
+  };
+  return Operator("norm")
+           .SetParam("ord", ord)
+           .SetParam("axis", axis)
+           .SetParam("out_dtype", NormOutDtypeValues[int(out_dtype)])
+           .SetParam("keepdims", keepdims)
            .SetInput("data", data)
            .CreateSymbol();
 }
@@ -13920,7 +12760,7 @@ inline Symbol nansum(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/cast_storage.cc:L71
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/cast_storage.cc:L71
  * \param data The input.
  * \param stype Output storage type.
  * \return new symbol
@@ -13967,7 +12807,7 @@ inline Symbol cast_storage(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/control_flow_op.cc:L57
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/control_flow_op.cc:L57
  * \param condition condition array
  * \param x
  * \param y
@@ -14039,7 +12879,7 @@ inline Symbol where(Symbol condition,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/diag_op.cc:L87
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/diag_op.cc:L87
  * \param data Input ndarray
  * \param k Diagonal in question. The default is 0. Use k>0 for diagonals above the main
  *        diagonal, and k<0 for diagonals below the main diagonal. If input has shape (S0
@@ -14107,7 +12947,7 @@ inline Symbol diag(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/dot.cc:L77
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/dot.cc:L77
  * \param lhs The first input
  * \param rhs The second input
  * \param transpose_a If true then transpose the first input before dot.
@@ -14141,18 +12981,18 @@ inline Symbol dot(Symbol lhs,
  * \brief Batchwise dot product.
  *
  *        ``batch_dot`` is used to compute dot product of ``x`` and ``y`` when ``x`` and
- *        ``y`` are data in batch, namely N-D (N >= 3) arrays in shape of `(B0, ..., B_i,
+ *        ``y`` are data in batch, namely 3D arrays in shape of `(batch_size, :, :)`.
  *
- *        For example, given ``x`` with shape `(B_0, ..., B_i, N, M)` and ``y`` with shape
- *        `(B_0, ..., B_i, M, K)`, the result array will have shape `(B_0, ..., B_i, N,
+ *        For example, given ``x`` with shape `(batch_size, n, m)` and ``y`` with shape
+ *        `(batch_size, m, k)`, the result array will have shape `(batch_size, n, k)`,
  *        which is computed by::
  *
- *        batch_dot(x,y)[b_0, ..., b_i, :, :] = dot(x[b_0, ..., b_i, :, :], y[b_0, ...,
+ *        batch_dot(x,y)[i,:,:] = dot(x[i,:,:], y[i,:,:])
  *
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/dot.cc:L127
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/dot.cc:L125
  * \param lhs The first input
  * \param rhs The second input
  * \param transpose_a If true then transpose the first input before dot.
@@ -14209,7 +13049,7 @@ inline Symbol batch_dot(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L58
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L58
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14249,7 +13089,7 @@ inline Symbol broadcast_add(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L106
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L106
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14283,7 +13123,7 @@ inline Symbol broadcast_sub(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L146
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L146
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14317,7 +13157,7 @@ inline Symbol broadcast_mul(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L187
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L187
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14347,7 +13187,7 @@ inline Symbol broadcast_div(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L222
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_basic.cc:L222
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14377,7 +13217,7 @@ inline Symbol broadcast_mod(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L45
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L45
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14409,7 +13249,7 @@ inline Symbol broadcast_power(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L81
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L80
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14441,7 +13281,7 @@ inline Symbol broadcast_maximum(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L117
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L115
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14479,7 +13319,7 @@ inline Symbol broadcast_minimum(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L158
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_extended.cc:L156
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14509,7 +13349,7 @@ inline Symbol broadcast_hypot(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L46
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L46
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14539,7 +13379,7 @@ inline Symbol broadcast_equal(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L64
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L64
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14569,7 +13409,7 @@ inline Symbol broadcast_not_equal(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L82
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L82
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14599,7 +13439,7 @@ inline Symbol broadcast_greater(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L100
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L100
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14629,7 +13469,7 @@ inline Symbol broadcast_greater_equal(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L118
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L118
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14659,7 +13499,7 @@ inline Symbol broadcast_lesser(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L136
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L136
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14689,7 +13529,7 @@ inline Symbol broadcast_lesser_equal(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L154
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L154
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14719,7 +13559,7 @@ inline Symbol broadcast_logical_and(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L172
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L172
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14749,7 +13589,7 @@ inline Symbol broadcast_logical_or(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L190
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_broadcast_op_logic.cc:L190
  * \param lhs First input to the function
  * \param rhs Second input to the function
  * \return new symbol
@@ -14878,7 +13718,7 @@ inline Symbol elemwise_div(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_binary_scalar_op_extended.cc:L108
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_binary_scalar_op_extended.cc:L104
  * \param data source input
  * \param scalar scalar input
  * \return new symbol
@@ -14909,7 +13749,7 @@ inline Symbol smooth_l1(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_sum.cc:L155
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_sum.cc:L155
  * \param args Positional input arguments
  * \return new symbol
  */
@@ -14934,7 +13774,7 @@ inline Symbol add_n(const std::vector<Symbol>& args) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L85
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L85
  * \param data The input array.
  * \return new symbol
  */
@@ -14955,7 +13795,7 @@ inline Symbol relu(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L119
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L119
  * \param data The input array.
  * \return new symbol
  */
@@ -14974,7 +13814,7 @@ inline Symbol sigmoid(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L161
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L133
  * \param data The input array.
  * \param alpha Slope of hard sigmoid
  * \param beta Bias of hard sigmoid.
@@ -15001,7 +13841,7 @@ inline Symbol hard_sigmoid(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L191
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L163
  * \param data The input array.
  * \return new symbol
  */
@@ -15040,7 +13880,7 @@ inline Symbol softsign(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L327
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L299
  * \param data The input array.
  * \return new symbol
  */
@@ -15075,7 +13915,7 @@ inline Symbol BlockGrad(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L360
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L332
  * \param data The input array.
  * \return new symbol
  */
@@ -15114,26 +13954,14 @@ inline Symbol make_loss(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L513
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L485
  * \param lhs First input.
  * \param rhs Second input.
- * \param lhs_begin Defaults to 0. The beginning index along which the lhs dimensions are
- * \param lhs_end Defaults to None. The ending index along which the lhs dimensions are
- * \param rhs_begin Defaults to 0. The beginning index along which the rhs dimensions are
- * \param rhs_end Defaults to None. The ending index along which the rhs dimensions are
  * \return new symbol
  */
 inline Symbol reshape_like(Symbol lhs,
-                           Symbol rhs,
-                           dmlc::optional<int> lhs_begin = dmlc::optional<int>(),
-                           dmlc::optional<int> lhs_end = dmlc::optional<int>(),
-                           dmlc::optional<int> rhs_begin = dmlc::optional<int>(),
-                           dmlc::optional<int> rhs_end = dmlc::optional<int>()) {
+                           Symbol rhs) {
   return Operator("reshape_like")
-           .SetParam("lhs_begin", lhs_begin)
-           .SetParam("lhs_end", lhs_end)
-           .SetParam("rhs_begin", rhs_begin)
-           .SetParam("rhs_end", rhs_end)
            .SetInput("lhs", lhs)
            .SetInput("rhs", rhs)
            .CreateSymbol();
@@ -15149,12 +13977,24 @@ inline Symbol reshape_like(Symbol lhs,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L574
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L544
  * \param data Input Array.
+ * \param lhs_begin Defaults to 0. The beginning index along which the lhs dimensions are
+ * \param lhs_end Defaults to None. The ending index along which the lhs dimensions are
+ * \param rhs_begin Defaults to 0. The beginning index along which the rhs dimensions are
+ * \param rhs_end Defaults to None. The ending index along which the rhs dimensions are
  * \return new symbol
  */
-inline Symbol shape_array(Symbol data) {
+inline Symbol shape_array(Symbol data,
+                          dmlc::optional<int> lhs_begin = dmlc::optional<int>(),
+                          dmlc::optional<int> lhs_end = dmlc::optional<int>(),
+                          dmlc::optional<int> rhs_begin = dmlc::optional<int>(),
+                          dmlc::optional<int> rhs_end = dmlc::optional<int>()) {
   return Operator("shape_array")
+           .SetParam("lhs_begin", lhs_begin)
+           .SetParam("lhs_end", lhs_end)
+           .SetParam("rhs_begin", rhs_begin)
+           .SetParam("rhs_end", rhs_end)
            .SetInput("data", data)
            .CreateSymbol();
 }
@@ -15169,7 +14009,7 @@ inline Symbol shape_array(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L625
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L596
  * \param data Input Array.
  * \return new symbol
  */
@@ -15193,7 +14033,7 @@ inline Symbol size_array(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L665
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L634
  * \param data The input.
  * \param dtype Output data type.
  * \return new symbol
@@ -15201,7 +14041,6 @@ inline Symbol size_array(Symbol data) {
 inline Symbol Cast(Symbol data,
                    CastDtype dtype) {
   static const char *CastDtypeValues[] = {
-    "bool",
     "float16",
     "float32",
     "float64",
@@ -15236,6 +14075,28 @@ inline Symbol negative(Symbol data) {
 }
 
 /*!
+ * \brief Returns the reciprocal of the argument, element-wise.
+ *
+ *        Calculates 1/x.
+ *
+ *        Example::
+ *
+ *        reciprocal([-2, 1, 3, 1.6, 0.2]) = [-0.5, 1.0, 0.33333334, 0.625, 5.0]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L686
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol reciprocal(Symbol data) {
+  return Operator("reciprocal")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
  * \brief Returns element-wise absolute value of the input.
  *
  *        Example::
@@ -15251,7 +14112,7 @@ inline Symbol negative(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L721
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L708
  * \param data The input array.
  * \return new symbol
  */
@@ -15277,7 +14138,7 @@ inline Symbol abs(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L759
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L727
  * \param data The input array.
  * \return new symbol
  */
@@ -15303,7 +14164,7 @@ inline Symbol sign(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L778
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L746
  * \param data The input array.
  * \return new symbol
  */
@@ -15333,7 +14194,7 @@ inline Symbol round(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L799
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L767
  * \param data The input array.
  * \return new symbol
  */
@@ -15361,7 +14222,7 @@ inline Symbol rint(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L818
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L786
  * \param data The input array.
  * \return new symbol
  */
@@ -15389,7 +14250,7 @@ inline Symbol ceil(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L837
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L805
  * \param data The input array.
  * \return new symbol
  */
@@ -15418,7 +14279,7 @@ inline Symbol floor(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L857
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L825
  * \param data The input array.
  * \return new symbol
  */
@@ -15445,12 +14306,124 @@ inline Symbol trunc(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L875
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L843
  * \param data The input array.
  * \return new symbol
  */
 inline Symbol fix(Symbol data) {
   return Operator("fix")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise squared value of the input.
+ *
+ *        .. math::
+ *        square(x) = x^2
+ *
+ *        Example::
+ *
+ *        square([2, 3, 4]) = [4, 9, 16]
+ *
+ *        The storage type of ``square`` output depends upon the input storage type:
+ *
+ *        - square(default) = default
+ *        - square(row_sparse) = row_sparse
+ *        - square(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L883
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol square(Symbol data) {
+  return Operator("square")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise square-root value of the input.
+ *
+ *        .. math::
+ *        \textrm{sqrt}(x) = \sqrt{x}
+ *
+ *        Example::
+ *
+ *        sqrt([4, 9, 16]) = [2, 3, 4]
+ *
+ *        The storage type of ``sqrt`` output depends upon the input storage type:
+ *
+ *        - sqrt(default) = default
+ *        - sqrt(row_sparse) = row_sparse
+ *        - sqrt(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L907
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol sqrt(Symbol data) {
+  return Operator("sqrt")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise inverse square-root value of the input.
+ *
+ *        .. math::
+ *        rsqrt(x) = 1/\sqrt{x}
+ *
+ *        Example::
+ *
+ *        rsqrt([4,9,16]) = [0.5, 0.33333334, 0.25]
+ *
+ *        The storage type of ``rsqrt`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L927
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol rsqrt(Symbol data) {
+  return Operator("rsqrt")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise cube-root value of the input.
+ *
+ *        .. math::
+ *        cbrt(x) = \sqrt[3]{x}
+ *
+ *        Example::
+ *
+ *        cbrt([1, 8, -125]) = [1, 2, -5]
+ *
+ *        The storage type of ``cbrt`` output depends upon the input storage type:
+ *
+ *        - cbrt(default) = default
+ *        - cbrt(row_sparse) = row_sparse
+ *        - cbrt(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L950
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol cbrt(Symbol data) {
+  return Operator("cbrt")
            .SetInput("data", data)
            .CreateSymbol();
 }
@@ -15465,7 +14438,7 @@ inline Symbol fix(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L886
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L964
  * \param data The input array.
  * \return new symbol
  */
@@ -15485,12 +14458,169 @@ inline Symbol erf(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L907
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L985
  * \param data The input array.
  * \return new symbol
  */
 inline Symbol erfinv(Symbol data) {
   return Operator("erfinv")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise inverse cube-root value of the input.
+ *
+ *        .. math::
+ *        rcbrt(x) = 1/\sqrt[3]{x}
+ *
+ *        Example::
+ *
+ *        rcbrt([1,8,-125]) = [1.0, 0.5, -0.2]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1004
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol rcbrt(Symbol data) {
+  return Operator("rcbrt")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise exponential value of the input.
+ *
+ *        .. math::
+ *        exp(x) = e^x \approx 2.718^x
+ *
+ *        Example::
+ *
+ *        exp([0, 1, 2]) = [1., 2.71828175, 7.38905621]
+ *
+ *        The storage type of ``exp`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1044
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol exp(Symbol data) {
+  return Operator("exp")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise Natural logarithmic value of the input.
+ *
+ *        The natural logarithm is logarithm in base *e*, so that ``log(exp(x)) = x``
+ *
+ *        The storage type of ``log`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1057
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol log(Symbol data) {
+  return Operator("log")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise Base-10 logarithmic value of the input.
+ *
+ *        ``10**log10(x) = x``
+ *
+ *        The storage type of ``log10`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1074
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol log10(Symbol data) {
+  return Operator("log10")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise Base-2 logarithmic value of the input.
+ *
+ *        ``2**log2(x) = x``
+ *
+ *        The storage type of ``log2`` output is always dense
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1086
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol log2(Symbol data) {
+  return Operator("log2")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns element-wise ``log(1 + x)`` value of the input.
+ *
+ *        This function is more accurate than ``log(1 + x)``  for small ``x`` so that
+ *        :math:`1+x\approx 1`
+ *
+ *        The storage type of ``log1p`` output depends upon the input storage type:
+ *
+ *        - log1p(default) = default
+ *        - log1p(row_sparse) = row_sparse
+ *        - log1p(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1171
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol log1p(Symbol data) {
+  return Operator("log1p")
+           .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Returns ``exp(x) - 1`` computed element-wise on the input.
+ *
+ *        This function provides greater precision than ``exp(x) - 1`` for small values
+ *
+ *        The storage type of ``expm1`` output depends upon the input storage type:
+ *
+ *        - expm1(default) = default
+ *        - expm1(row_sparse) = row_sparse
+ *        - expm1(csr) = csr
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_basic.cc:L1189
+ * \param data The input array.
+ * \return new symbol
+ */
+inline Symbol expm1(Symbol data) {
+  return Operator("expm1")
            .SetInput("data", data)
            .CreateSymbol();
 }
@@ -15544,297 +14674,6 @@ inline Symbol logical_not(Symbol data) {
 }
 
 /*!
- * \brief Returns element-wise exponential value of the input.
- *
- *        .. math::
- *        exp(x) = e^x \approx 2.718^x
- *
- *        Example::
- *
- *        exp([0, 1, 2]) = [1., 2.71828175, 7.38905621]
- *
- *        The storage type of ``exp`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L63
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol exp(Symbol data) {
-  return Operator("exp")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns element-wise Natural logarithmic value of the input.
- *
- *        The natural logarithm is logarithm in base *e*, so that ``log(exp(x)) = x``
- *
- *        The storage type of ``log`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L76
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol log(Symbol data) {
-  return Operator("log")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns element-wise Base-10 logarithmic value of the input.
- *
- *        ``10**log10(x) = x``
- *
- *        The storage type of ``log10`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L93
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol log10(Symbol data) {
-  return Operator("log10")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns element-wise Base-2 logarithmic value of the input.
- *
- *        ``2**log2(x) = x``
- *
- *        The storage type of ``log2`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L105
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol log2(Symbol data) {
-  return Operator("log2")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns element-wise ``log(1 + x)`` value of the input.
- *
- *        This function is more accurate than ``log(1 + x)``  for small ``x`` so that
- *        :math:`1+x\approx 1`
- *
- *        The storage type of ``log1p`` output depends upon the input storage type:
- *
- *        - log1p(default) = default
- *        - log1p(row_sparse) = row_sparse
- *        - log1p(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L206
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol log1p(Symbol data) {
-  return Operator("log1p")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns ``exp(x) - 1`` computed element-wise on the input.
- *
- *        This function provides greater precision than ``exp(x) - 1`` for small values
- *
- *        The storage type of ``expm1`` output depends upon the input storage type:
- *
- *        - expm1(default) = default
- *        - expm1(row_sparse) = row_sparse
- *        - expm1(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_logexp.cc:L224
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol expm1(Symbol data) {
-  return Operator("expm1")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns the reciprocal of the argument, element-wise.
- *
- *        Calculates 1/x.
- *
- *        Example::
- *
- *        reciprocal([-2, 1, 3, 1.6, 0.2]) = [-0.5, 1.0, 0.33333334, 0.625, 5.0]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L42
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol reciprocal(Symbol data) {
-  return Operator("reciprocal")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns element-wise squared value of the input.
- *
- *        .. math::
- *        square(x) = x^2
- *
- *        Example::
- *
- *        square([2, 3, 4]) = [4, 9, 16]
- *
- *        The storage type of ``square`` output depends upon the input storage type:
- *
- *        - square(default) = default
- *        - square(row_sparse) = row_sparse
- *        - square(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L118
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol square(Symbol data) {
-  return Operator("square")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns element-wise square-root value of the input.
- *
- *        .. math::
- *        \textrm{sqrt}(x) = \sqrt{x}
- *
- *        Example::
- *
- *        sqrt([4, 9, 16]) = [2, 3, 4]
- *
- *        The storage type of ``sqrt`` output depends upon the input storage type:
- *
- *        - sqrt(default) = default
- *        - sqrt(row_sparse) = row_sparse
- *        - sqrt(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L142
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol sqrt(Symbol data) {
-  return Operator("sqrt")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns element-wise inverse square-root value of the input.
- *
- *        .. math::
- *        rsqrt(x) = 1/\sqrt{x}
- *
- *        Example::
- *
- *        rsqrt([4,9,16]) = [0.5, 0.33333334, 0.25]
- *
- *        The storage type of ``rsqrt`` output is always dense
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L193
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol rsqrt(Symbol data) {
-  return Operator("rsqrt")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns element-wise cube-root value of the input.
- *
- *        .. math::
- *        cbrt(x) = \sqrt[3]{x}
- *
- *        Example::
- *
- *        cbrt([1, 8, -125]) = [1, 2, -5]
- *
- *        The storage type of ``cbrt`` output depends upon the input storage type:
- *
- *        - cbrt(default) = default
- *        - cbrt(row_sparse) = row_sparse
- *        - cbrt(csr) = csr
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L216
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol cbrt(Symbol data) {
-  return Operator("cbrt")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
- * \brief Returns element-wise inverse cube-root value of the input.
- *
- *        .. math::
- *        rcbrt(x) = 1/\sqrt[3]{x}
- *
- *        Example::
- *
- *        rcbrt([1,8,-125]) = [1.0, 0.5, -0.2]
- *
- *
- *
- *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_pow.cc:L269
- * \param data The input array.
- * \return new symbol
- */
-inline Symbol rcbrt(Symbol data) {
-  return Operator("rcbrt")
-           .SetInput("data", data)
-           .CreateSymbol();
-}
-
-/*!
  * \brief Computes the element-wise sine of the input array.
  *
  *        The input should be in radians (:math:`2\pi` rad equals 360 degrees).
@@ -15851,7 +14690,7 @@ inline Symbol rcbrt(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L47
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L46
  * \param data The input array.
  * \return new symbol
  */
@@ -15874,7 +14713,7 @@ inline Symbol sin(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L90
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L89
  * \param data The input array.
  * \return new symbol
  */
@@ -15901,7 +14740,7 @@ inline Symbol cos(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L140
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L139
  * \param data The input array.
  * \return new symbol
  */
@@ -15929,7 +14768,7 @@ inline Symbol tan(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L187
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L160
  * \param data The input array.
  * \return new symbol
  */
@@ -15953,7 +14792,7 @@ inline Symbol arcsin(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L206
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L179
  * \param data The input array.
  * \return new symbol
  */
@@ -15980,7 +14819,7 @@ inline Symbol arccos(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L227
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L200
  * \param data The input array.
  * \return new symbol
  */
@@ -16005,7 +14844,7 @@ inline Symbol arctan(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L274
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L219
  * \param data The input array.
  * \return new symbol
  */
@@ -16030,7 +14869,7 @@ inline Symbol degrees(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L293
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L238
  * \param data The input array.
  * \return new symbol
  */
@@ -16055,7 +14894,7 @@ inline Symbol radians(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L313
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L257
  * \param data The input array.
  * \return new symbol
  */
@@ -16076,7 +14915,7 @@ inline Symbol sinh(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L351
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L272
  * \param data The input array.
  * \return new symbol
  */
@@ -16101,7 +14940,7 @@ inline Symbol cosh(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L393
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L290
  * \param data The input array.
  * \return new symbol
  */
@@ -16124,7 +14963,7 @@ inline Symbol tanh(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L436
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L306
  * \param data The input array.
  * \return new symbol
  */
@@ -16143,7 +14982,7 @@ inline Symbol arcsinh(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L474
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L320
  * \param data The input array.
  * \return new symbol
  */
@@ -16166,7 +15005,7 @@ inline Symbol arccosh(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L515
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/elemwise_unary_op_trig.cc:L337
  * \param data The input array.
  * \return new symbol
  */
@@ -16191,9 +15030,8 @@ inline Symbol arctanh(Symbol data) {
  *        If the input_dim is ip0 and output_dim is op0, then shape of the embedding
  *        (ip0, op0).
  *
- *        When "sparse_grad" is False, if any index mentioned is too large, it is
- *        addresses the last vector in an embedding matrix.
- *        When "sparse_grad" is True, an error will be raised if invalid indices are
+ *        By default, if any index mentioned is too large, it is replaced by the index
+ *        the last vector in an embedding matrix.
  *
  *        Examples::
  *
@@ -16231,7 +15069,7 @@ inline Symbol arctanh(Symbol data) {
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/indexing_op.cc:L539
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/indexing_op.cc:L519
  * \param data The input array to the embedding operator.
  * \param weight The embedding weight matrix.
  * \param input_dim Vocabulary size of the input indices.
@@ -16318,13 +15156,13 @@ inline Symbol Embedding(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/indexing_op.cc:L718
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/indexing_op.cc:L695
  * \param a The input array.
  * \param indices The indices of the values to be extracted.
  * \param axis The axis of input array to be taken.For input tensor of rank r, it could
  * \param mode Specify how out-of-bound indices bahave. Default is "clip". "clip" means
  *        clip to the range. So, if all indices mentioned are too large, they are
- *        replaced by the index that addresses the last element along an axis. "wrap"
+ *        replaced by the index that addresses the last element along an axis.  "wrap"
  * \return new symbol
  */
 inline Symbol take(Symbol a,
@@ -16367,7 +15205,7 @@ inline Symbol take(Symbol a,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/indexing_op.cc:L777
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/indexing_op.cc:L753
  * \param a The input array
  * \param indices The index array
  * \return new symbol
@@ -16416,7 +15254,7 @@ inline Symbol batch_take(Symbol a,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/indexing_op.cc:L824
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/indexing_op.cc:L799
  * \param indices array of locations where to set on_value
  * \param depth Depth of the one hot dimension.
  * \param on_value The value assigned to the locations represented by indices.
@@ -16597,46 +15435,70 @@ inline Symbol ones_like(Symbol data) {
 
 /*!
  * \brief Reshapes the input array.
+ *
  *        .. note:: ``Reshape`` is deprecated, use ``reshape``
+ *
  *        Given an array and a shape, this function returns a copy of the array in the
  *        The shape is a tuple of integers such as (2,3,4). The size of the new shape
+ *
  *        Example::
+ *
  *        reshape([1,2,3,4], shape=(2,2)) = [[1,2], [3,4]]
+ *
  *        Some dimensions of the shape can take special values from the set {0, -1, -2,
+ *
  *        - ``0``  copy this dimension from the input to the output shape.
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (4,0,2), output shape = (4,3,2)
  *        - input shape = (2,3,4), shape = (2,0,0), output shape = (2,3,4)
+ *
  *        - ``-1`` infers the dimension of the output shape by using the remainder of the
  *        keeping the size of the new array same as that of the input array.
  *        At most one dimension of shape can be -1.
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (6,1,-1), output shape = (6,1,4)
  *        - input shape = (2,3,4), shape = (3,-1,8), output shape = (3,1,8)
  *        - input shape = (2,3,4), shape=(-1,), output shape = (24,)
+ *
  *        - ``-2`` copy all/remainder of the input dimensions to the output shape.
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (-2,), output shape = (2,3,4)
  *        - input shape = (2,3,4), shape = (2,-2), output shape = (2,3,4)
  *        - input shape = (2,3,4), shape = (-2,1,1), output shape = (2,3,4,1,1)
+ *
  *        - ``-3`` use the product of two consecutive dimensions of the input shape as
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (-3,4), output shape = (6,4)
  *        - input shape = (2,3,4,5), shape = (-3,-3), output shape = (6,20)
  *        - input shape = (2,3,4), shape = (0,-3), output shape = (2,12)
  *        - input shape = (2,3,4), shape = (-3,-2), output shape = (6,4)
+ *
  *        - ``-4`` split one dimension of the input into two dimensions passed subsequent
+ *
  *        Example::
+ *
  *        - input shape = (2,3,4), shape = (-4,1,2,-2), output shape =(1,2,3,4)
  *        - input shape = (2,3,4), shape = (2,-4,-1,3,-2), output shape = (2,1,3,4)
+ *
  *        If the argument `reverse` is set to 1, then the special values are inferred
+ *
  *        Example::
+ *
  *        - without reverse=1, for input shape = (10,5,4), shape = (-1,0), output shape
  *        - with reverse=1, output shape will be (50,4).
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L175
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L202
  * \param data Input data to reshape.
  * \param shape The target shape
  * \param reverse If true then the special values are inferred from right to left
@@ -16661,27 +15523,36 @@ inline Symbol Reshape(Symbol data,
 
 /*!
  * \brief Permutes the dimensions of an array.
+ *
  *        Examples::
+ *
  *        x = [[ 1, 2],
  *        [ 3, 4]]
+ *
  *        transpose(x) = [[ 1.,  3.],
  *        [ 2.,  4.]]
+ *
  *        x = [[[ 1.,  2.],
  *        [ 3.,  4.]],
+ *
  *        [[ 5.,  6.],
  *        [ 7.,  8.]]]
+ *
  *        transpose(x) = [[[ 1.,  5.],
  *        [ 3.,  7.]],
+ *
  *        [[ 2.,  6.],
  *        [ 4.,  8.]]]
+ *
  *        transpose(x, axes=(1,0,2)) = [[[ 1.,  2.],
  *        [ 5.,  6.]],
+ *
  *        [[ 3.,  4.],
  *        [ 7.,  8.]]]
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L328
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L375
  * \param data Source input
  * \param axes Target axis order. By default the axes will be inverted.
  * \return new symbol
@@ -16696,12 +15567,14 @@ inline Symbol transpose(Symbol data,
 
 /*!
  * \brief Inserts a new axis of size 1 into the array shape
+ *
  *        For example, given ``x`` with shape ``(2,3,4)``, then ``expand_dims(x, axis=1)``
  *        will return a new array with shape ``(2,1,3,4)``.
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L395
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L416
  * \param data Source input
  * \param axis Position where new axis is to be inserted. Suppose that the input
  *        `NDArray`'s dimension is `ndim`, the range of the inserted axis is `[-ndim,
@@ -16717,33 +15590,44 @@ inline Symbol expand_dims(Symbol data,
 
 /*!
  * \brief Slices a region of the array.
+ *
  *        .. note:: ``crop`` is deprecated. Use ``slice`` instead.
+ *
  *        This function returns a sliced array between the indices given
  *        by `begin` and `end` with the corresponding `step`.
+ *
  *        For an input array of ``shape=(d_0, d_1, ..., d_n-1)``,
  *        slice operation with ``begin=(b_0, b_1...b_m-1)``,
  *        ``end=(e_0, e_1, ..., e_m-1)``, and ``step=(s_0, s_1, ..., s_m-1)``,
  *        where m <= n, results in an array with the shape
  *        ``(|e_0-b_0|/|s_0|, ..., |e_m-1-b_m-1|/|s_m-1|, d_m, ..., d_n-1)``.
+ *
  *        The resulting array's *k*-th dimension contains elements
  *        from the *k*-th dimension of the input array starting
  *        from index ``b_k`` (inclusive) with step ``s_k``
  *        until reaching ``e_k`` (exclusive).
+ *
  *        If the *k*-th elements are `None` in the sequence of `begin`, `end`,
  *        and `step`, the following rule will be used to set default values.
  *        If `s_k` is `None`, set `s_k=1`. If `s_k > 0`, set `b_k=0`, `e_k=d_k`;
  *        else, set `b_k=d_k-1`, `e_k=-1`.
+ *
  *        The storage type of ``slice`` output depends on storage types of inputs
+ *
  *        - slice(csr) = csr
  *        - otherwise, ``slice`` generates output with default storage
+ *
  *        .. note:: When input data storage type is csr, it only supports
  *        step=(), or step=(None,), or step=(1,) to generate a csr output.
  *        For other step parameter values, it falls back to slicing
  *        a dense tensor.
+ *
  *        Example::
+ *
  *        x = [[  1.,   2.,   3.,   4.],
  *        [  5.,   6.,   7.,   8.],
  *        [  9.,  10.,  11.,  12.]]
+ *
  *        slice(x, begin=(0,1), end=(2,4)) = [[ 2.,  3.,  4.],
  *        [ 6.,  7.,  8.]]
  *        slice(x, begin=(None, 0), end=(None, 3), step=(-1, 2)) = [[9., 11.],
@@ -16752,7 +15636,7 @@ inline Symbol expand_dims(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L482
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L506
  * \param data Source input
  * \param begin starting indices for the slice operation, supports negative indices.
  * \param end ending indices for the slice operation, supports negative indices.
@@ -16773,24 +15657,30 @@ inline Symbol slice(Symbol data,
 
 /*!
  * \brief Slices along a given axis.
+ *
  *        Returns an array slice along a given `axis` starting from the `begin` index
  *        to the `end` index.
+ *
  *        Examples::
+ *
  *        x = [[  1.,   2.,   3.,   4.],
  *        [  5.,   6.,   7.,   8.],
  *        [  9.,  10.,  11.,  12.]]
+ *
  *        slice_axis(x, axis=0, begin=1, end=3) = [[  5.,   6.,   7.,   8.],
  *        [  9.,  10.,  11.,  12.]]
+ *
  *        slice_axis(x, axis=1, begin=0, end=2) = [[  1.,   2.],
  *        [  5.,   6.],
  *        [  9.,  10.]]
+ *
  *        slice_axis(x, axis=1, begin=-3, end=-1) = [[  2.,   3.],
  *        [  6.,   7.],
  *        [ 10.,  11.]]
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L571
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L596
  * \param data Source input
  * \param axis Axis along which to be sliced, supports negative indexes.
  * \param begin The beginning index along the axis to be sliced,  supports negative
@@ -16811,31 +15701,46 @@ inline Symbol slice_axis(Symbol data,
 
 /*!
  * \brief Slices a region of the array like the shape of another array.
+ *
  *        This function is similar to ``slice``, however, the `begin` are always `0`s
  *        and `end` of specific axes are inferred from the second input `shape_like`.
+ *
  *        Given the second `shape_like` input of ``shape=(d_0, d_1, ..., d_n-1)``,
  *        a ``slice_like`` operator with default empty `axes`, it performs the
  *        following operation:
+ *
  *        `` out = slice(input, begin=(0, 0, ..., 0), end=(d_0, d_1, ..., d_n-1))``.
+ *
  *        When `axes` is not empty, it is used to speficy which axes are being sliced.
+ *
  *        Given a 4-d input data, ``slice_like`` operator with ``axes=(0, 2, -1)``
  *        will perform the following operation:
+ *
  *        `` out = slice(input, begin=(0, 0, 0, 0), end=(d_0, None, d_2, d_3))``.
+ *
  *        Note that it is allowed to have first and second input with different
  *        however, you have to make sure the `axes` are specified and not exceeding the
  *        dimension limits.
+ *
  *        For example, given `input_1` with ``shape=(2,3,4,5)`` and `input_2` with
  *        ``shape=(1,2,3)``, it is not allowed to use:
+ *
  *        `` out = slice_like(a, b)`` because ndim of `input_1` is 4, and ndim of
  *        is 3.
+ *
  *        The following is allowed in this situation:
+ *
  *        `` out = slice_like(a, b, axes=(0, 2))``
+ *
  *        Example::
+ *
  *        x = [[  1.,   2.,   3.,   4.],
  *        [  5.,   6.,   7.,   8.],
  *        [  9.,  10.,  11.,  12.]]
+ *
  *        y = [[  0.,   0.,   0.],
  *        [  0.,   0.,   0.]]
+ *
  *        slice_like(x, y) = [[ 1.,  2.,  3.]
  *        [ 5.,  6.,  7.]]
  *        slice_like(x, y, axes=(0, 1)) = [[ 1.,  2.,  3.]
@@ -16848,7 +15753,7 @@ inline Symbol slice_axis(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L625
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L665
  * \param data Source input
  * \param shape_like Shape like input
  * \param axes List of axes on which input data will be sliced according to the
@@ -16867,15 +15772,21 @@ inline Symbol slice_like(Symbol data,
 
 /*!
  * \brief Clips (limits) the values in an array.
+ *
  *        Given an interval, values outside the interval are clipped to the interval
- *        Clipping ``x`` between `a_min` and `a_max` would be::
- *        .. math::
- *        clip(x, a_min, a_max) = \max(\min(x, a_max), a_min))
+ *        Clipping ``x`` between `a_min` and `a_x` would be::
+ *
+ *        clip(x, a_min, a_max) = max(min(x, a_max), a_min))
+ *
  *        Example::
+ *
  *        x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+ *
  *        clip(x,1,8) = [ 1.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  8.]
+ *
  *        The storage type of ``clip`` output depends on storage types of inputs and the
  *        parameter values:
+ *
  *        - clip(default) = default
  *        - clip(row_sparse, a_min <= 0, a_max >= 0) = row_sparse
  *        - clip(csr, a_min <= 0, a_max >= 0) = csr
@@ -16885,8 +15796,9 @@ inline Symbol slice_like(Symbol data,
  *        - clip(csr, a_min > 0, a_max > 0) = csr
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L677
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L723
  * \param data Input array.
  * \param a_min Minimum value
  * \param a_max Maximum value
@@ -16904,24 +15816,32 @@ inline Symbol clip(Symbol data,
 
 /*!
  * \brief Repeats elements of an array.
+ *
  *        By default, ``repeat`` flattens the input array into 1-D and then repeats the
  *        elements::
+ *
  *        x = [[ 1, 2],
  *        [ 3, 4]]
+ *
  *        repeat(x, repeats=2) = [ 1.,  1.,  2.,  2.,  3.,  3.,  4.,  4.]
+ *
  *        The parameter ``axis`` specifies the axis along which to perform repeat::
+ *
  *        repeat(x, repeats=2, axis=1) = [[ 1.,  1.,  2.,  2.],
  *        [ 3.,  3.,  4.,  4.]]
+ *
  *        repeat(x, repeats=2, axis=0) = [[ 1.,  2.],
  *        [ 1.,  2.],
  *        [ 3.,  4.],
  *        [ 3.,  4.]]
+ *
  *        repeat(x, repeats=2, axis=-1) = [[ 1.,  1.,  2.,  2.],
  *        [ 3.,  3.,  4.,  4.]]
  *
  *
+ *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L744
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L796
  * \param data Input data array
  * \param repeats The number of repetitions for each element.
  * \param axis The axis along which to repeat values. The negative numbers are
@@ -16940,25 +15860,35 @@ inline Symbol repeat(Symbol data,
 
 /*!
  * \brief Repeats the whole array multiple times.
+ *
  *        If ``reps`` has length *d*, and input array has dimension of *n*. There are
  *        three cases:
+ *
  *        - **n=d**. Repeat *i*-th dimension of the input by ``reps[i]`` times::
+ *
  *        x = [[1, 2],
  *        [3, 4]]
+ *
  *        tile(x, reps=(2,3)) = [[ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.],
  *        [ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.]]
+ *
  *        - **n>d**. ``reps`` is promoted to length *n* by pre-pending 1's to it. Thus for
  *        an input shape ``(2,3)``, ``repos=(2,)`` is treated as ``(1,2)``::
+ *
+ *
  *        tile(x, reps=(2,)) = [[ 1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.]]
+ *
  *        - **n<d**. The input is promoted to be d-dimensional by prepending new axes. So
  *        shape ``(2,2)`` array is promoted to ``(1,2,2)`` for 3-D replication::
+ *
  *        tile(x, reps=(2,2,3)) = [[[ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.],
  *        [ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.]],
+ *
  *        [[ 1.,  2.,  1.,  2.,  1.,  2.],
  *        [ 3.,  4.,  3.,  4.,  3.,  4.],
  *        [ 1.,  2.,  1.,  2.,  1.,  2.],
@@ -16966,7 +15896,7 @@ inline Symbol repeat(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L796
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L857
  * \param data Input data array
  * \param reps The number of times for repeating the tensor a. Each dim size of reps must
  *        be a positive integer. If reps has length d, the result will have dimension of
@@ -16983,18 +15913,23 @@ inline Symbol tile(Symbol data,
 
 /*!
  * \brief Reverses the order of elements along given axis while preserving array shape.
+ *
  *        Note: reverse and flip are equivalent. We use reverse in the following examples.
+ *
  *        Examples::
+ *
  *        x = [[ 0.,  1.,  2.,  3.,  4.],
  *        [ 5.,  6.,  7.,  8.,  9.]]
+ *
  *        reverse(x, axis=0) = [[ 5.,  6.,  7.,  8.,  9.],
  *        [ 0.,  1.,  2.,  3.,  4.]]
+ *
  *        reverse(x, axis=1) = [[ 4.,  3.,  2.,  1.,  0.],
  *        [ 9.,  8.,  7.,  6.,  5.]]
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L832
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L898
  * \param data Input data array
  * \param axis The axis which to reverse elements.
  * \return new symbol
@@ -17009,12 +15944,16 @@ inline Symbol reverse(Symbol data,
 
 /*!
  * \brief Join a sequence of arrays along a new axis.
+ *
  *        The axis parameter specifies the index of the new axis in the dimensions of the
  *        result. For example, if axis=0 it will be the first dimension and if axis=-1 it
  *        will be the last dimension.
+ *
  *        Examples::
+ *
  *        x = [1, 2]
  *        y = [3, 4]
+ *
  *        stack(x, y) = [[1, 2],
  *        [3, 4]]
  *        stack(x, y, axis=1) = [[1, 3],
@@ -17039,12 +15978,15 @@ inline Symbol stack(const std::vector<Symbol>& data,
  * \brief Remove single-dimensional entries from the shape of an array.
  *        Same behavior of defining the output tensor shape as numpy.squeeze for the most
  *        See the following note for exception.
+ *
  *        Examples::
+ *
  *        data = [[[0], [1], [2]]]
  *        squeeze(data) = [0, 1, 2]
  *        squeeze(data, axis=0) = [[0], [1], [2]]
  *        squeeze(data, axis=2) = [[0, 1, 2]]
  *        squeeze(data, axis=(0, 2)) = [0, 1, 2]
+ *
  *        .. Note::
  *        The output of this operator will keep at least one dimension not removed. For
  *        squeeze([[[4]]]) = [4], while in numpy.squeeze, the output will become a scalar.
@@ -17053,11 +15995,11 @@ inline Symbol stack(const std::vector<Symbol>& data,
  * \param axis Selects a subset of the single-dimensional entries in the shape. If an
  * \return new symbol
  */
-inline Symbol squeeze(Symbol data,
+inline Symbol squeeze(const std::vector<Symbol>& data,
                       dmlc::optional<Shape> axis = dmlc::optional<Shape>()) {
   return Operator("squeeze")
            .SetParam("axis", axis)
-           .SetInput("data", data)
+(data)
            .CreateSymbol();
 }
 
@@ -17067,15 +16009,20 @@ inline Symbol squeeze(Symbol data,
  *        https://github.com/onnx/onnx/blob/master/docs/Operators.md#DepthToSpace.
  *        The output is a new tensor where the values from depth dimension are moved in
  *        to height and width dimension. The reverse of this operation is
+ *
  *        .. math::
+ *
  *        \begin{gather*}
  *        x \prime = reshape(x, [N, block\_size, block\_size, C / (block\_size ^ 2), H *
  *        x \prime \prime = transpose(x \prime, [0, 3, 4, 1, 5, 2]) \\
  *        y = reshape(x \prime \prime, [N, C / (block\_size ^ 2), H * block\_size, W *
  *        \end{gather*}
+ *
  *        where :math:`x` is an input tensor with default layout as :math:`[N, C, H, W]`:
  *        and :math:`y` is the output tensor of layout :math:`[N, C / (block\_size ^ 2),
+ *
  *        Example::
+ *
  *        x = [[[[0, 1, 2],
  *        [3, 4, 5]],
  *        [[6, 7, 8],
@@ -17084,6 +16031,7 @@ inline Symbol squeeze(Symbol data,
  *        [15, 16, 17]],
  *        [[18, 19, 20],
  *        [21, 22, 23]]]]
+ *
  *        depth_to_space(x, 2) = [[[[0, 6, 1, 7, 2, 8],
  *        [12, 18, 13, 19, 14, 20],
  *        [3, 9, 4, 10, 5, 11],
@@ -17091,7 +16039,7 @@ inline Symbol squeeze(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L972
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L1050
  * \param data Input ndarray
  * \param block_size Blocks of [block_size. block_size] are moved
  * \return new symbol
@@ -17108,21 +16056,29 @@ inline Symbol depth_to_space(Symbol data,
  * \brief Rearranges(permutes) blocks of spatial data into depth.
  *        Similar to ONNX SpaceToDepth operator:
  *        https://github.com/onnx/onnx/blob/master/docs/Operators.md#SpaceToDepth
+ *
  *        The output is a new tensor where the values from height and width dimension are
  *        moved to the depth dimension. The reverse of this operation is
+ *
  *        .. math::
+ *
  *        \begin{gather*}
  *        x \prime = reshape(x, [N, C, H / block\_size, block\_size, W / block\_size,
  *        x \prime \prime = transpose(x \prime, [0, 3, 5, 1, 2, 4]) \\
  *        y = reshape(x \prime \prime, [N, C * (block\_size ^ 2), H / block\_size, W /
  *        \end{gather*}
+ *
  *        where :math:`x` is an input tensor with default layout as :math:`[N, C, H, W]`:
  *        and :math:`y` is the output tensor of layout :math:`[N, C * (block\_size ^ 2),
+ *
  *        Example::
+ *
  *        x = [[[[0, 6, 1, 7, 2, 8],
  *        [12, 18, 13, 19, 14, 20],
  *        [3, 9, 4, 10, 5, 11],
  *        [15, 21, 16, 22, 17, 23]]]]
+ *
+ *
  *        space_to_depth(x, 2) = [[[[0, 1, 2],
  *        [3, 4, 5]],
  *        [[6, 7, 8],
@@ -17134,7 +16090,7 @@ inline Symbol depth_to_space(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/matrix_op.cc:L1019
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/matrix_op.cc:L1104
  * \param data Input ndarray
  * \param block_size Blocks of [block_size. block_size] are moved
  * \return new symbol
@@ -17148,10 +16104,7 @@ inline Symbol space_to_depth(Symbol data,
 }
 
 /*!
- * \brief Returns the indices of the top *k* elements in an input array along the given
- *        axis (by default).
- *        If ret_type is set to 'value' returns the value of top *k* elements (instead of
- *        In case of ret_type = 'both', both value and index would be returned.
+ * \brief Returns the top *k* elements in an input array along the given axis.
  *        The returned elements will be sorted.
  *
  *        Examples::
@@ -17181,7 +16134,7 @@ inline Symbol space_to_depth(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/ordering_op.cc:L68
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/ordering_op.cc:L64
  * \param data The input array
  * \param axis Axis along which to choose the top k indices. If not given, the flattened
  * \param k Number of top elements to select, should be always smaller than or equal to
@@ -17210,7 +16163,6 @@ inline Symbol topk(Symbol data,
     "float32",
     "float64",
     "int32",
-    "int64",
     "uint8"
   };
   return Operator("topk")
@@ -17236,7 +16188,7 @@ inline Symbol topk(Symbol data,
  *        [ 1.,  3.]]
  *
  *        // flattens and then sorts
- *        sort(x, axis=None) = [ 1.,  1.,  3.,  4.]
+ *        sort(x) = [ 1.,  1.,  3.,  4.]
  *
  *        // sorts along the first axis
  *        sort(x, axis=0) = [[ 1.,  1.],
@@ -17249,7 +16201,7 @@ inline Symbol topk(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/ordering_op.cc:L132
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/ordering_op.cc:L127
  * \param data The input array
  * \param axis Axis along which to choose sort the input tensor. If not given, the
  * \param is_ascend Whether to sort in ascending or descending order.
@@ -17285,11 +16237,11 @@ inline Symbol sort(Symbol data,
  *        [ 0.,  1.,  0.]]
  *
  *        // flatten and then sort
- *        argsort(x, axis=None) = [ 3.,  1.,  5.,  0.,  4.,  2.]
+ *        argsort(x) = [ 3.,  1.,  5.,  0.,  4.,  2.]
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/tensor/ordering_op.cc:L183
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/tensor/ordering_op.cc:L177
  * \param data The input array
  * \param axis Axis along which to sort the input tensor. If not given, the flattened
  * \param is_ascend Whether to sort in ascending or descending order.
@@ -17306,7 +16258,6 @@ inline Symbol argsort(Symbol data,
     "float32",
     "float64",
     "int32",
-    "int64",
     "uint8"
   };
   return Operator("argsort")
@@ -17392,7 +16343,7 @@ inline Symbol argsort(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/bilinear_sampler.cc:L256
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/bilinear_sampler.cc:L256
  * \param data Input data to the BilinearsamplerOp.
  * \param grid Input grid to the BilinearsamplerOp.grid has two channels: x_src, y_src
  * \param cudnn_off whether to turn cudnn off
@@ -17520,7 +16471,7 @@ inline Symbol Convolution_v1(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/correlation.cc:L198
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/correlation.cc:L198
  * \param data1 Input data1 to the correlation.
  * \param data2 Input data2 to the correlation.
  * \param kernel_size kernel size for Correlation must be an odd number
@@ -17562,7 +16513,7 @@ inline Symbol Correlation(Symbol data1,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/crop.cc:L50
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/crop.cc:L50
  * \param data Tensor or List of Tensors, the second input will be used as crop_like
  * \param num_args Number of inputs for crop, if equals one, then we will use the h_wfor
  *        crop height and width, else if equals two, then we will use the heightand width
@@ -17627,7 +16578,7 @@ inline Symbol GridGenerator(Symbol data,
  *        If the input data is of shape [batch, channel, spacial_dim1, spacial_dim2, ...],
  *        `gamma` and `beta` parameters must be vectors of shape [channel].
  *
- *        This implementation is based on this paper [1]_
+ *        This implementation is based on paper:
  *
  *        .. [1] Instance Normalization: The Missing Ingredient for Fast Stylization,
  *        D. Ulyanov, A. Vedaldi, V. Lempitsky, 2016 (arXiv:1607.08022v2).
@@ -17651,7 +16602,7 @@ inline Symbol GridGenerator(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/instance_norm.cc:L95
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/instance_norm.cc:L95
  * \param data An n-dimensional input array (n > 2) of the form [batch, channel,
  * \param gamma A vector of length 'channel', which multiplies the normalized input.
  * \param beta A vector of length 'channel', which is added to the product of the
@@ -17726,7 +16677,7 @@ inline Symbol InstanceNorm(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/l2_normalization.cc:L196
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/l2_normalization.cc:L196
  * \param data Input array to normalize.
  * \param eps A small constant for numerical stability.
  * \param mode Specify the dimension along which to compute L2 norm.
@@ -17772,7 +16723,7 @@ inline Symbol L2Normalization(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/make_loss.cc:L71
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/make_loss.cc:L71
  * \param data Input array.
  * \param grad_scale Gradient scale as a supplement to unary and binary operators
  * \param valid_thresh clip each element in the array to 0 when it is less than
@@ -17839,7 +16790,7 @@ inline Symbol MakeLoss(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/pooling_v1.cc:L104
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/pooling_v1.cc:L104
  * \param data Input data to the pooling operator.
  * \param kernel pooling kernel size: (y, x) or (d, y, x)
  * \param pool_type Pooling type to be applied.
@@ -17873,6 +16824,74 @@ inline Symbol Pooling_v1(Symbol data,
            .SetParam("stride", stride)
            .SetParam("pad", pad)
            .SetInput("data", data)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Performs region of interest(ROI) pooling on the input array.
+ *
+ *        ROI pooling is a variant of a max pooling layer, in which the output size is
+ *        region of interest is a parameter. Its purpose is to perform max pooling on the
+ *        of non-uniform sizes to obtain fixed-size feature maps. ROI pooling is a
+ *        layer mostly used in training a `Fast R-CNN` network for object detection.
+ *
+ *        This operator takes a 4D feature map as an input array and region proposals as
+ *        then it pools over sub-regions of input and produces a fixed-sized output array
+ *        regardless of the ROI size.
+ *
+ *        To crop the feature map accordingly, you can resize the bounding box coordinates
+ *        by changing the parameters `rois` and `spatial_scale`.
+ *
+ *        The cropped feature maps are pooled by standard max pooling operation to a
+ *        indicated by a `pooled_size` parameter. batch_size will change to the number of
+ *        bounding boxes after `ROIPooling`.
+ *
+ *        The size of each region of interest doesn't have to be perfectly divisible by
+ *        the number of pooling sections(`pooled_size`).
+ *
+ *        Example::
+ *
+ *        x = [[[[  0.,   1.,   2.,   3.,   4.,   5.],
+ *        [  6.,   7.,   8.,   9.,  10.,  11.],
+ *        [ 12.,  13.,  14.,  15.,  16.,  17.],
+ *        [ 18.,  19.,  20.,  21.,  22.,  23.],
+ *        [ 24.,  25.,  26.,  27.,  28.,  29.],
+ *        [ 30.,  31.,  32.,  33.,  34.,  35.],
+ *        [ 36.,  37.,  38.,  39.,  40.,  41.],
+ *        [ 42.,  43.,  44.,  45.,  46.,  47.]]]]
+ *
+ *        // region of interest i.e. bounding box coordinates.
+ *        y = [[0,0,0,4,4]]
+ *
+ *        // returns array of shape (2,2) according to the given roi with max pooling.
+ *        ROIPooling(x, y, (2,2), 1.0) = [[[[ 14.,  16.],
+ *        [ 26.,  28.]]]]
+ *
+ *        // region of interest is changed due to the change in `spacial_scale` parameter.
+ *        ROIPooling(x, y, (2,2), 0.7) = [[[[  7.,   9.],
+ *        [ 19.,  21.]]]]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/roi_pooling.cc:L295
+ * \param data The input array to the pooling operator,  a 4D Feature maps
+ * \param rois Bounding box coordinates, a 2D array of [[batch_index, x1, y1, x2, y2]],
+ *        where (x1, y1) and (x2, y2) are top left and bottom right corners of designated
+ *        region of interest. `batch_index` indicates the index of corresponding image in
+ * \param pooled_size ROI pooling output shape (h,w)
+ * \param spatial_scale Ratio of input feature map height (or w) to raw image height (or
+ * \return new symbol
+ */
+inline Symbol ROIPooling(Symbol data,
+                         Symbol rois,
+                         Shape pooled_size,
+                         mx_float spatial_scale) {
+  return Operator("ROIPooling")
+           .SetParam("pooled_size", pooled_size)
+           .SetParam("spatial_scale", spatial_scale)
+           .SetInput("data", data)
+           .SetInput("rois", rois)
            .CreateSymbol();
 }
 
@@ -17924,7 +16943,7 @@ inline Symbol Pooling_v1(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/sequence_last.cc:L106
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/sequence_last.cc:L100
  * \param data n-dimensional input array of the form [max_sequence_length, batch_size,
  * \param sequence_length vector of sequence lengths of the form [batch_size]
  * \param use_sequence_length If set to true, this layer takes in an extra input
@@ -17937,6 +16956,98 @@ inline Symbol SequenceLast(Symbol data,
                            int axis = 0) {
   return Operator("SequenceLast")
            .SetParam("use_sequence_length", use_sequence_length)
+           .SetParam("axis", axis)
+           .SetInput("data", data)
+           .SetInput("sequence_length", sequence_length)
+           .CreateSymbol();
+}
+
+/*!
+ * \brief Sets all elements outside the sequence to a constant value.
+ *
+ *        This function takes an n-dimensional input array of the form
+ *        [max_sequence_length, batch_size, other_feature_dims] and returns an array of
+ *
+ *        Parameter `sequence_length` is used to handle variable-length sequences.
+ *        should be an input array of positive ints of dimension [batch_size].
+ *        To use this parameter, set `use_sequence_length` to `True`,
+ *        otherwise each example in the batch is assumed to have the max sequence length
+ *        this operator works as the `identity` operator.
+ *
+ *        Example::
+ *
+ *        x = [[[  1.,   2.,   3.],
+ *        [  4.,   5.,   6.]],
+ *
+ *        [[  7.,   8.,   9.],
+ *        [ 10.,  11.,  12.]],
+ *
+ *        [[ 13.,  14.,   15.],
+ *        [ 16.,  17.,   18.]]]
+ *
+ *        // Batch 1
+ *        B1 = [[  1.,   2.,   3.],
+ *        [  7.,   8.,   9.],
+ *        [ 13.,  14.,  15.]]
+ *
+ *        // Batch 2
+ *        B2 = [[  4.,   5.,   6.],
+ *        [ 10.,  11.,  12.],
+ *        [ 16.,  17.,  18.]]
+ *
+ *        // works as identity operator when sequence_length parameter is not used
+ *        SequenceMask(x) = [[[  1.,   2.,   3.],
+ *        [  4.,   5.,   6.]],
+ *
+ *        [[  7.,   8.,   9.],
+ *        [ 10.,  11.,  12.]],
+ *
+ *        [[ 13.,  14.,   15.],
+ *        [ 16.,  17.,   18.]]]
+ *
+ *        // sequence_length [1,1] means 1 of each batch will be kept
+ *        // and other rows are masked with default mask value = 0
+ *        SequenceMask(x, sequence_length=[1,1], use_sequence_length=True) =
+ *        [[[  1.,   2.,   3.],
+ *        [  4.,   5.,   6.]],
+ *
+ *        [[  0.,   0.,   0.],
+ *        [  0.,   0.,   0.]],
+ *
+ *        [[  0.,   0.,   0.],
+ *        [  0.,   0.,   0.]]]
+ *
+ *        // sequence_length [2,3] means 2 of batch B1 and 3 of batch B2 will be kept
+ *        // and other rows are masked with value = 1
+ *        SequenceMask(x, sequence_length=[2,3], use_sequence_length=True, value=1) =
+ *        [[[  1.,   2.,   3.],
+ *        [  4.,   5.,   6.]],
+ *
+ *        [[  7.,   8.,   9.],
+ *        [  10.,  11.,  12.]],
+ *
+ *        [[   1.,   1.,   1.],
+ *        [  16.,  17.,  18.]]]
+ *
+ *
+ *
+ *        Defined in
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/sequence_mask.cc:L186
+ * \param data n-dimensional input array of the form [max_sequence_length, batch_size,
+ * \param sequence_length vector of sequence lengths of the form [batch_size]
+ * \param use_sequence_length If set to true, this layer takes in an extra input
+ * \param value The value to be used as a mask.
+ * \param axis The sequence axis. Only values of 0 and 1 are currently supported.
+ * \return new symbol
+ */
+inline Symbol SequenceMask(Symbol data,
+                           Symbol sequence_length,
+                           bool use_sequence_length = false,
+                           mx_float value = 0,
+                           int axis = 0) {
+  return Operator("SequenceMask")
+           .SetParam("use_sequence_length", use_sequence_length)
+           .SetParam("value", value)
            .SetParam("axis", axis)
            .SetInput("data", data)
            .SetInput("sequence_length", sequence_length)
@@ -18012,7 +17123,7 @@ inline Symbol SequenceLast(Symbol data,
  *
  *
  *        Defined in
- *        /home/jiaopan/packages/apache-mxnet-src-1.6.0-incubating/src/operator/sequence_reverse.cc:L122
+ *        /home/jiaopan/packages/apache-mxnet-src-1.5.1-incubating/src/operator/sequence_reverse.cc:L122
  * \param data n-dimensional input array of the form [max_sequence_length, batch_size,
  * \param sequence_length vector of sequence lengths of the form [batch_size]
  * \param use_sequence_length If set to true, this layer takes in an extra input

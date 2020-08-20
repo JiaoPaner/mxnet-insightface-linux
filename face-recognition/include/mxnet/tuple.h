@@ -199,12 +199,7 @@ class Tuple {
    * \return the corresponding dimension size
    */
   inline ValueType& operator[](int i) {
-    // it fixes the false alarm of assuming signed overflow does not occur
-    // when assuming that (X - c) > X is always false [-Werror=strict-overflow]
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstrict-overflow"
     CHECK(i >= 0 && i < ndim()) << "index = " << i << " must be in range [0, " << ndim() << ")";
-    #pragma GCC diagnostic pop
     return begin()[i];
   }
   /*!
@@ -213,12 +208,7 @@ class Tuple {
    * \return the corresponding dimension size
    */
   inline const ValueType& operator[](int i) const {
-    // it fixes the false alarm of assuming signed overflow does not occur
-    // when assuming that (X - c) > X is always false [-Werror=strict-overflow]
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstrict-overflow"
     CHECK(i >= 0 && i < ndim()) << "index = " << i << " must be in range [0, " << ndim() << ")";
-    #pragma GCC diagnostic pop
     return begin()[i];
   }
   /*!
@@ -282,14 +272,6 @@ class Tuple {
       is.get();
       if (ch == '(' || ch == '[') break;
       if (!isspace(ch)) {
-        if (ch == 'N') {
-          std::string tmp_val;
-          is >> tmp_val;
-          if (tmp_val == "one") {  // is stores "None"
-            t.SetDim(-1);
-            return is;
-          }
-        }
         is.setstate(std::ios::failbit);
         return is;
       }
@@ -671,13 +653,6 @@ inline bool shape_is_known(const TShape& x) {
   return true;
 }
 
-inline bool shape_is_known(const std::vector<TShape>& shapes) {
-  for (const TShape& shape : shapes) {
-    if (!shape_is_known(shape)) return false;
-  }
-  return true;
-}
-
 /*! \brief helper function to cast type of container elements */
 template<typename SrcIter, typename DstIter>
 inline DstIter ShapeTypeCast(const SrcIter begin,
@@ -766,7 +741,7 @@ namespace dmlc {
 DMLC_DECLARE_TYPE_NAME(optional<mxnet::TShape>, "Shape or None");
 DMLC_DECLARE_TYPE_NAME(optional<mxnet::Tuple<int>>, "Shape or None");
 // avoid low version of MSVC
-#if !(defined(_MSC_VER) && _MSC_VER < 1900)
+#if !defined(_MSC_VER)
 template<typename T>
 struct type_name_helper<mxnet::Tuple<T> > {
   static inline std::string value() {

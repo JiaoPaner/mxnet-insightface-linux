@@ -30,7 +30,6 @@
 #include <cmath>
 #include <string>
 #include <vector>
-#include <random>
 #include "mxnet-cpp/ndarray.h"
 
 namespace mxnet {
@@ -68,14 +67,6 @@ class Initializer {
       InitZero(arr);
     } else if (StringEndWith(name, "moving_avg")) {
       InitZero(arr);
-    } else if (StringEndWith(name, "min")) {
-      InitZero(arr);
-    } else if (StringEndWith(name, "max")) {
-      InitOne(arr);
-    } else if (StringEndWith(name, "weight_quantize")) {
-      InitQuantizedWeight(arr);
-    } else if (StringEndWith(name, "bias_quantize")) {
-      InitQuantizedBias(arr);
     } else {
       InitDefault(arr);
     }
@@ -100,14 +91,6 @@ class Initializer {
   virtual void InitGamma(NDArray* arr) { (*arr) = 1.0f; }
   virtual void InitBeta(NDArray* arr) { (*arr) = 0.0f; }
   virtual void InitWeight(NDArray* arr) {}
-  virtual void InitQuantizedWeight(NDArray* arr) {
-    std::default_random_engine generator;
-    std::uniform_int_distribution<int32_t> _val(-127, 127);
-    (*arr) = _val(generator);
-  }
-  virtual void InitQuantizedBias(NDArray* arr) {
-    (*arr) = 0;
-  }
   virtual void InitDefault(NDArray* arr) {}
 };
 
@@ -139,14 +122,6 @@ class Uniform : public Initializer {
   Uniform(float begin, float end)
     : begin(begin), end(end) {}
   void operator()(const std::string &name, NDArray *arr) override {
-    if (StringEndWith(name, "weight_quantize")) {
-      InitQuantizedWeight(arr);
-      return;
-    }
-    if (StringEndWith(name, "bias_quantize")) {
-      InitQuantizedBias(arr);
-      return;
-    }
     NDArray::SampleUniform(begin, end, arr);
   }
  protected:
@@ -158,14 +133,6 @@ class Normal : public Initializer {
   Normal(float mu, float sigma)
     : mu(mu), sigma(sigma) {}
   void operator()(const std::string &name, NDArray *arr) override {
-    if (StringEndWith(name, "weight_quantize")) {
-      InitQuantizedWeight(arr);
-      return;
-    }
-    if (StringEndWith(name, "bias_quantize")) {
-      InitQuantizedBias(arr);
-      return;
-    }
     NDArray::SampleGaussian(mu, sigma, arr);
   }
  protected:
@@ -176,14 +143,6 @@ class Bilinear : public Initializer {
  public:
   Bilinear() {}
   void operator()(const std::string &name, NDArray *arr) override {
-    if (StringEndWith(name, "weight_quantize")) {
-      InitQuantizedWeight(arr);
-      return;
-    }
-    if (StringEndWith(name, "bias_quantize")) {
-      InitQuantizedBias(arr);
-      return;
-    }
     InitBilinear(arr);
   }
 };
@@ -205,15 +164,6 @@ class Xavier : public Initializer {
       : rand_type(rand_type), factor_type(factor_type), magnitude(magnitude) {}
 
   void operator()(const std::string &name, NDArray* arr) override {
-    if (StringEndWith(name, "weight_quantize")) {
-      InitQuantizedWeight(arr);
-      return;
-    }
-    if (StringEndWith(name, "bias_quantize")) {
-      InitQuantizedBias(arr);
-      return;
-    }
-
     Shape shape(arr->GetShape());
     float hw_scale = 1.0f;
     if (shape.ndim() > 2) {

@@ -165,30 +165,6 @@ struct Parameter {
   }
 
   /*!
-   * \brief Update the parameter by keyword arguments.  This is same as
-   * `InitAllowUnknown', but without setting not provided parameters to their default.
-   *
-   * \tparam Container container type
-   *
-   * \param kwargs map of keyword arguments, or vector of pairs
-   * \param out_changed (optional) Output whether any parameter is changed during update.
-   *
-   * \throw ParamError when something go wrong.
-   * \return vector of pairs of unknown arguments.
-   */
-  template <typename Container>
-  std::vector<std::pair<std::string, std::string> >
-  UpdateAllowUnknown(Container const& kwargs, bool* out_changed = nullptr) {
-    std::vector<std::pair<std::string, std::string> > unknown;
-    bool changed {false};
-    changed = PType::__MANAGER__()->RunUpdate(static_cast<PType*>(this),
-                                              kwargs.begin(), kwargs.end(),
-                                              parameter::kAllowUnknown, &unknown, nullptr);
-    if (out_changed) { *out_changed = changed; }
-    return unknown;
-  }
-
-  /*!
    * \brief Update the dict with values stored in parameter.
    *
    * \param dict The dictionary to be updated.
@@ -350,12 +326,6 @@ class FieldAccessEntry {
    * \param value the value to be set
    */
   virtual void Set(void *head, const std::string &value) const = 0;
-  /*!
-   * \brief See if new and old values are the same
-   * \param head the pointer to the head of the struct
-   * \param value the value to be set
-   */
-  virtual bool Same(void* head, const std::string& value) const = 0;
   // check if value is OK
   virtual void Check(void *head) const {}
   /*!
@@ -380,12 +350,6 @@ class FieldAccessEntry {
   std::string type_;
   /*! \brief description of the parameter */
   std::string description_;
-  // internal offset of the field
-  ptrdiff_t offset_;
-  /*! \brief get pointer to parameter */
-  char* GetRawPtr(void* head) const {
-    return reinterpret_cast<char*>(head) + offset_;
-  }
   /*!
    * \brief print string representation of default value
    * \parma os the stream to print the docstring to.
@@ -419,7 +383,7 @@ class ParamManager {
     return it->second;
   }
   /*!
-   * \brief Set parameter by keyword arguments and default values.
+   * \brief set parameter by keyword arguments.
    * \param head head to the parameter field.
    * \param begin begin iterator of original kwargs
    * \param end end iterator of original kwargs
@@ -435,49 +399,12 @@ class ParamManager {
                       std::vector<std::pair<std::string, std::string> > *unknown_args,
                       parameter::ParamInitOption option) const {
     std::set<FieldAccessEntry*> selected_args;
-    RunUpdate(head, begin, end, option, unknown_args, &selected_args);
-    for (auto const& kv : entry_map_) {
-      if (selected_args.find(kv.second) == selected_args.cend()) {
-        kv.second->SetDefault(head);
-      }
-    }
-    for (std::map<std::string, FieldAccessEntry*>::const_iterator it = entry_map_.begin();
-         it != entry_map_.end(); ++it) {
-      if (selected_args.count(it->second) == 0) {
-        it->second->SetDefault(head);
-      }
-    }
-  }
-  /*!
-   * \brief Update parameters by keyword arguments.
-   *
-   * \tparam RandomAccessIterator iterator type
-   * \param head head to the parameter field.
-   * \param begin begin iterator of original kwargs
-   * \param end end iterator of original kwargs
-   * \param unknown_args optional, used to hold unknown arguments
-   *          When it is specified, unknown arguments will be stored into here, instead of raise an error
-   * \param selected_args The arguments used in update will be pushed into it, defaullt to nullptr.
-   * \throw ParamError when there is unknown argument and unknown_args == NULL, or required argument is missing.
-   */
-  template <typename RandomAccessIterator>
-  bool RunUpdate(void *head,
-                 RandomAccessIterator begin,
-                 RandomAccessIterator end,
-                 parameter::ParamInitOption option,
-                 std::vector<std::pair<std::string, std::string> > *unknown_args,
-                 std::set<FieldAccessEntry*>* selected_args = nullptr) const {
-    bool changed {false};
     for (RandomAccessIterator it = begin; it != end; ++it) {
-      if (FieldAccessEntry *e = Find(it->first)) {
-        if (!e->Same(head, it->second)) {
-          changed = true;
-        }
+      FieldAccessEntry *e = Find(it->first);
+      if (e != NULL) {
         e->Set(head, it->second);
         e->Check(head);
-        if (selected_args) {
-          selected_args->insert(e);
-        }
+        selected_args.insert(e);
       } else {
         if (unknown_args != NULL) {
           unknown_args->push_back(*it);
@@ -498,7 +425,13 @@ class ParamManager {
         }
       }
     }
-    return changed;
+
+    for (std::map<std::string, FieldAccessEntry*>::const_iterator it = entry_map_.begin();
+         it != entry_map_.end(); ++it) {
+      if (selected_args.count(it->second) == 0) {
+        it->second->SetDefault(head);
+      }
+    }
   }
   /*!
    * \brief internal function to add entry to manager,
@@ -620,7 +553,7 @@ class FieldEntryBase : public FieldAccessEntry {
   // entry type
   typedef TEntry EntryType;
   // implement set value
-  void Set(void *head, const std::string &value) const override {
+  virtual void Set(void *head, const std::string &value) const {
     std::istringstream is(value);
     is >> this->Get(head);
     if (!is.fail()) {
@@ -642,23 +575,12 @@ class FieldEntryBase : public FieldAccessEntry {
       throw dmlc::ParamError(os.str());
     }
   }
-  bool Same(void* head, std::string const& value) const override {
-    DType old = this->Get(head);
-    DType now;
-    std::istringstream is(value);
-    is >> now;
-    // don't require = operator
-    bool is_same = std::equal(
-        reinterpret_cast<char*>(&now), reinterpret_cast<char*>(&now) + sizeof(now),
-        reinterpret_cast<char*>(&old));
-    return is_same;
-  }
-  std::string GetStringValue(void *head) const override {
+  virtual std::string GetStringValue(void *head) const {
     std::ostringstream os;
     PrintValue(os, this->Get(head));
     return os.str();
   }
-  ParamFieldInfo GetFieldInfo() const override {
+  virtual ParamFieldInfo GetFieldInfo() const {
     ParamFieldInfo info;
     std::ostringstream os;
     info.name = key_;
@@ -675,7 +597,7 @@ class FieldEntryBase : public FieldAccessEntry {
     return info;
   }
   // implement set head to default value
-  void SetDefault(void *head) const override {
+  virtual void SetDefault(void *head) const {
     if (!has_default_) {
       std::ostringstream os;
       os << "Required parameter " << key_
@@ -717,15 +639,17 @@ class FieldEntryBase : public FieldAccessEntry {
   virtual void PrintValue(std::ostream &os, DType value) const { // NOLINT(*)
     os << value;
   }
-  void PrintDefaultValueString(std::ostream &os) const override {  // NOLINT(*)
+  virtual void PrintDefaultValueString(std::ostream &os) const {  // NOLINT(*)
     PrintValue(os, default_value_);
   }
   // get the internal representation of parameter
   // for example if this entry corresponds field param.learning_rate
   // then Get(&param) will return reference to param.learning_rate
   inline DType &Get(void *head) const {
-    return *(DType*)this->GetRawPtr(head);  // NOLINT(*)
+    return *(DType*)((char*)(head) + offset_);  // NOLINT(*)
   }
+  // internal offset of the field
+  ptrdiff_t offset_;
   // default value of field
   DType default_value_;
 };
@@ -756,21 +680,18 @@ class FieldEntryNumeric
       if (v < begin_ || v > end_) {
         std::ostringstream os;
         os << "value " << v << " for Parameter " << this->key_
-           << " exceed bound [" << begin_ << ',' << end_ <<']' << '\n';
-        os << this->key_ << ": " << this->description_;
+           << " exceed bound [" << begin_ << ',' << end_ <<']';
         throw dmlc::ParamError(os.str());
       }
     } else if (has_begin_ && v < begin_) {
         std::ostringstream os;
         os << "value " << v << " for Parameter " << this->key_
-           << " should be greater equal to " << begin_ << '\n';
-        os << this->key_ << ": " << this->description_;
+           << " should be greater equal to " << begin_;
         throw dmlc::ParamError(os.str());
     } else if (has_end_ && v > end_) {
         std::ostringstream os;
         os << "value " << v << " for Parameter " << this->key_
-           << " should be smaller equal to " << end_ << '\n';
-        os << this->key_ << ": " << this->description_;
+           << " should be smaller equal to " << end_;
         throw dmlc::ParamError(os.str());
     }
   }
@@ -1168,7 +1089,7 @@ inline void SetEnv(const char *key,
   parameter::FieldEntry<ValueType> e;
   e.Init(key, &value, value);
 #ifdef _WIN32
-  _putenv_s(key, e.GetStringValue(&value).c_str());
+  _putenv(key, e.GetStringValue(&value).c_str());
 #else
   setenv(key, e.GetStringValue(&value).c_str(), 1);
 #endif  // _WIN32

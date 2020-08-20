@@ -92,12 +92,6 @@
 #endif
 #endif
 
-/*! \brief Whether to use modern thread local construct */
-#ifndef DMLC_MODERN_THREAD_LOCAL
-#define DMLC_MODERN_THREAD_LOCAL 1
-#endif
-
-
 
 /*! \brief whether RTTI is enabled */
 #ifndef DMLC_ENABLE_RTTI
@@ -284,11 +278,7 @@ inline const char* BeginPtr(const std::string &str) {
 /* If fopen64 is not defined by current machine,
    replace fopen64 with std::fopen. Also determine ability to print stack trace
    for fatal error and define DMLC_LOG_STACK_TRACE if stack trace can be
-   produced. Always keep this include directive at the bottom of dmlc/base.h */
-#ifdef DMLC_CORE_USE_CMAKE
+   produced. Always keep this #include at the bottom of dmlc/base.h */
 #include <dmlc/build_config.h>
-#else
-#include <dmlc/build_config_default.h>
-#endif
 
 #endif  // DMLC_BASE_H_
