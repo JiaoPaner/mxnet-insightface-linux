@@ -11,7 +11,7 @@
 #include "face_align.hpp"
 
 using namespace mxnet::cpp;
-Context global_ctx(kCPU,0);
+
 class Recognizer{
     public:
         int LoadMxnetModel(const std::string & fname, std::vector<char>& buf){

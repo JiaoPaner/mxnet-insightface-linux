@@ -4,6 +4,7 @@ project(face_recognition)
 set(CMAKE_CXX_STANDARD 14)
 
 string(APPEND CMAKE_C_FLAGS "-DHAVE_NETINET_IN_H")
+string(APPEND CMAKE_C_FLAGS "-Wwrite-strings")
 
 find_package(OpenCV REQUIRED)
 include_directories(include ${OpenCV_INCLUDE_DIRS})
