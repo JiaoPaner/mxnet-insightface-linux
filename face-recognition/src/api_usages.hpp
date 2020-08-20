@@ -1,0 +1,8 @@
+//
+// Created by jiaopan on 8/20/20.
+//
+
+#ifndef FACE_RECOGNITION_API_USAGES_HPP
+#define FACE_RECOGNITION_API_USAGES_HPP
+
+#endif //FACE_RECOGNITION_API_USAGES_HPP
