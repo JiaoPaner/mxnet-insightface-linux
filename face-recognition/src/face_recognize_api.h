@@ -30,5 +30,9 @@ char*  computeDistanceByFile(char* base_src, char* target_src, int detected);
     base/target:"/9j/4AAQSkZJRgABAQE..."
 */
 char*  computeDistanceByBase64(char* base_data,char* target_data, int detected);
+
+void getUsages();
+
 }
+
 

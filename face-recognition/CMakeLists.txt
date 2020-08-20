@@ -13,7 +13,7 @@ link_directories(lib)
 file(GLOB src src/*.cpp src/*.c src/*.hpp src/*.h)
 set(SRC ${src})
 
-add_executable(face_recognition ${SRC})
-#add_library(face_recognition SHARED ${SRC})
+#add_executable(face_recognition ${SRC})
+add_library(face_recognition SHARED ${SRC})
 
 target_link_libraries(face_recognition ${OpenCV_LIBS} mxnet)

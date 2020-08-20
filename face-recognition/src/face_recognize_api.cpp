@@ -7,7 +7,7 @@
 #include "recognizer.hpp"
 #include "cJSON.h"
 #include "utils.hpp"
-
+#include "api_usages.hpp"
 #include <time.h>
 
 static Recognizer recognizer;
@@ -305,6 +305,10 @@ char*  computeDistanceByBase64(char* base_data,char* target_data, int detected =
         return resultJson;
     }
     return computeDistanceByMat(base, target, detected);
+}
+
+void getUsages(){
+    getPythonUsage();
 }
 
 /*----------------------------------------------------------------------------------------------*/
