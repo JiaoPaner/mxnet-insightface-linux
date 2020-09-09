@@ -6,6 +6,12 @@ extern "C" {
 
 int loadModel(char* mtcnn_model, char* insightface_params, char * insightface_json);
 
+char*  detectFaceByFile(char* src,int type);
+/*
+    base64_data:"/9j/4AAQSkZJRgABAQE..."
+*/
+char*  detectFaceByBase64(char* base64_data,int type);
+
 char*  extractFaceFeatureByFile(char* src,int detected,int type);
 
 char*  extractFaceFeatureByByte(unsigned char* src, int width, int height, int channels, int detected,int type);

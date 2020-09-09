@@ -11,6 +11,53 @@
 #include <time.h>
 
 static Recognizer recognizer;
+char* detectFace(cv::Mat image,int type){
+    cJSON  *result = cJSON_CreateObject(), *faces = cJSON_CreateArray();
+    char *resultJson;
+    cv::Mat src(5, 2, CV_32FC1, norm_face);
+    std::vector<face_box> face_boxs;
+    recognizer.mtcnn.Detect(image, face_boxs);
+    int index = 0;
+    float max_box = 0;
+    if (type == 1) {
+        if (face_boxs.size() > 0) {
+            for (int i = 0; i < face_boxs.size(); i++) {
+                face_box face_box = face_boxs[i];
+                float box = (face_box.x1 - face_box.x0 + face_box.y1 - face_box.y0) / 2;
+                if (box > max_box) {
+                    max_box = box;
+                    index = i;
+                }
+            }
+            face_box face_box = face_boxs[index];
+            cJSON  *face;
+            cJSON_AddItemToArray(faces, face = cJSON_CreateObject());
+            cJSON_AddNumberToObject(face,"x",face_box.x0);
+            cJSON_AddNumberToObject(face,"y",face_box.y0);
+            cJSON_AddNumberToObject(face,"width",face_box.x1-face_box.x0);
+            cJSON_AddNumberToObject(face,"height",face_box.y1 - face_box.y0);
+        }
+
+    }
+    else{
+        for (int i = 0; i < face_boxs.size(); i++) {
+            face_box face_box = face_boxs[i];
+            if (face_box.score * 100 < 70)
+                continue;
+            cJSON  *face;
+            cJSON_AddItemToArray(faces, face = cJSON_CreateObject());
+            cJSON_AddNumberToObject(face,"x",face_box.x0);
+            cJSON_AddNumberToObject(face,"y",face_box.y0);
+            cJSON_AddNumberToObject(face,"width",face_box.x1-face_box.x0);
+            cJSON_AddNumberToObject(face,"height",face_box.y1 - face_box.y0);
+        }
+    }
+    cJSON_AddNumberToObject(result, "status", 1);
+    cJSON_AddStringToObject(result, "msg", "detect success");
+    cJSON_AddItemToObject(result, "faces", faces);
+    resultJson = cJSON_PrintUnformatted(result);
+    return resultJson;
+}
 char* extractFaceFeatureByImage(cv::Mat image,int type) {
     cJSON  *result = cJSON_CreateObject(), *embeddings = cJSON_CreateArray();
     char *resultJson;
@@ -161,8 +208,45 @@ cv::Mat convertToMat(std::string str) {
 
 /*---------------------------------------api list -----------------------------------------------------------------*/
 int loadModel(char* mtcnn_model,char* insightface_params,char * insightface_json) {
+    std::cout << "use Wisesoft System Integration face recognition lib" << std::endl;
     std::cout << "loading model..." << std::endl;
     return recognizer.loadModel(mtcnn_model, insightface_params, insightface_json);
+}
+
+char*  detectFaceByFile(char* src,int type){
+    cJSON  *result = cJSON_CreateObject(), *faces = cJSON_CreateArray();
+    char *resultJson;
+    cv::Mat image;
+    try{
+        image = imread(src);
+    }
+    catch (const std::exception&){
+        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddStringToObject(result, "msg", "detect failed,can not load file");
+        cJSON_AddItemToObject(result, "faces", faces);
+        resultJson = cJSON_PrintUnformatted(result);
+        return resultJson;
+    }
+
+    return detectFace(image,type);
+}
+
+char*  detectFaceByBase64(char* base64_data,int type){
+    std::string data(base64_data);
+    cJSON  *result = cJSON_CreateObject(), *faces = cJSON_CreateArray();
+    char *resultJson;
+    cv::Mat image;
+    try {
+        image = Utils::base64ToMat(data);
+    }
+    catch (const std::exception&) {
+        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddStringToObject(result, "msg", "detect failed,can not convert base64 to Mat");
+        cJSON_AddItemToObject(result, "embeddings", faces);
+        resultJson = cJSON_PrintUnformatted(result);
+        return resultJson;
+    }
+    return detectFace(image,type);
 }
 
 char * extractFaceFeatureByFile(char * src, int detected = 0, int type = 0){
@@ -308,7 +392,7 @@ char*  computeDistanceByBase64(char* base_data,char* target_data, int detected =
 }
 
 void getUsages(){
-    getPythonUsage();
+    getUsage();
 }
 
 /*----------------------------------------------------------------------------------------------*/
@@ -318,7 +402,8 @@ int main() {
     char* feature_model_json = "/home/jiaopan/projects/c++/mxnet-insightface-linux/face-recognition/model/feature_model/128/model-symbol.json";
     int status = loadModel("/home/jiaopan/projects/c++/mxnet-insightface-linux/face-recognition/model/mtcnn", feature_model_params, feature_model_json);
 
-    char* result = extractFaceFeatureByFile("/home/jiaopan/Downloads/dit.jpg",1,1);
+    //char* result = extractFaceFeatureByFile("/home/jiaopan/Downloads/dit.jpg",1,1);
+    char* result = detectFaceByFile("/home/jiaopan/Downloads/zidane.jpg",0);
     std::cout << result << std::endl;
 
     //char* result = computeDistance("0.029020833, -0.0068783676, -0.020256473, 0.08922711, 0.1520647, -0.063353509, -0.011182057, 0.23773466, -0.1844321, -0.0074027572, -0.14794661, 0.0051653897, 0.052046064, 0.056903902, 0.079200841, -0.0086160116, -0.10275403, 0.059177171, -0.075488754, -0.049072653, 0.027570521, 0.18733168, -0.010161424, -0.076425344, 0.02510317, -0.086876422, -0.099469766, 0.16163287, -0.084967688, -0.021871576, 0.14369343, 0.097055502, 0.0065840217, -0.018097101, -0.029480744, -0.066096894, 0.016942978, 0.15646647, 0.052293401, 0.12903209, -0.10855469, 0.044652212, 0.00074599194, -0.16131599, -0.072199926, -0.093255699, -0.068642981, 0.12120935, 0.006100629, -0.038449984, 0.073843718, -0.032517787, 0.031847525, -0.0082237236, -0.033020604, -0.026024288, 0.024662545, 0.097049288, -0.013186242, 0.0087926928, 0.085941195, -0.073864095, -0.034101862, -0.062069096, 0.059358981, 0.04966893, -0.036914833, 0.047939252, 0.054796625, -0.018790253, 0.060238205, 0.0076167355, -0.015216754, -0.061193034, -0.016889416, -0.03072207, -0.16774717, 0.068628848, -0.20049851, 0.020299155, 0.1187629, -0.0033529375, -0.030330595, -0.095323272, -0.0049259844, -0.076598287, -0.17594662, -0.073459841, -0.18311255, -0.031051619, 0.03720101, -0.23655726, -0.055039775, 0.012025496, -0.010668803, -0.054880727, -0.0031114377, 0.094407134, -0.03481745, 0.061542794, 0.13756463, 0.14968817, 0.0043450315, 0.042938448, -0.0020956821, 0.10656384, 0.012789681, -0.048712991, 0.0069972454, -0.027091177, -0.063452356, -0.052107193, 0.13972144, 0.0080326824, -0.21505292, -0.043706249, -0.16731535, -0.083271667, -0.055855714, 0.051882118, -0.040529616, 0.091872461, -0.19573945, 0.02434974, 0.037454743, -0.030554138, 0.01387815, 0.18017061","0.09884572, -0.068491496, -0.078664772, 0.032762606, 0.20072919, 0.024014864, 0.047349561, 0.20139465, -0.24945836, 0.016614795, -0.07572569, 0.11808685, 0.17146656, 0.089800715, -0.025433548, 0.040357802, -0.075069338, 0.044914488, -0.093217447, -0.005331621, 0.022735745, -0.058652312, 0.026685696, -0.022456085, 0.02619436, -0.010089835, -0.14127219, 0.14149182, 0.096490413, -0.01297182, 0.20552859, 0.1833231, 0.063791238, -0.054114789, -0.056761984, -0.088626556, -0.057970654, 0.11274455, -0.089882031, 0.036606628, -0.11511264, 0.09308967, 0.059945799, -0.10937923, 0.11097006, -0.019142125, -0.09145803, 0.1311432, 0.1252171, -0.038730226, -0.080530547, 0.081010491, 0.096036114, -0.096100479, 0.049759038, 0.031370837, -0.049491502, 0.13946846, -0.11055151, -0.0038676588, -0.056756437, -0.0038580534, -0.12307825, -0.10289554, -0.0033650277, 0.083691142, 0.028183304, 0.061029408, -0.0049481452, -0.043966934, 0.014331327, 0.03241935, -0.040123675, -0.14365859, -0.014310184, -0.074716471, -0.11835559, 0.082309127, -0.17734039, -0.045208976, 0.10009804, -0.041692022, -0.0055328049, -0.033204131, -0.026514528, -0.10978604, -0.095468342, -0.12418511, -0.15704995, 0.028290421, 0.099584438, -0.19754614, -0.070700161, 0.018390089, -0.062242635, 0.02848771, 0.019649331, 0.043790292, 0.060032263, -0.033581559, 0.10508171, 0.14813991, -0.042962868, -0.026277989, 0.026779169, 0.10178101, 0.037330393, -0.084159054, 0.031589653, -0.00096823327, -0.10374437, -0.052678231, 0.06412217, -0.034865569, -0.040277272, -0.06836205, 0.00085853663, -0.058881979, -0.019776454, 0.036946878, -0.045691911, 0.088631786, -0.11997437, 0.14228344, 0.12539271, -0.0025624367, 0.048964616, 0.05127272");

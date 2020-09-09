@@ -162,7 +162,8 @@ class Recognizer{
             if (pred_feature)
                 MXPredFree(pred_feature);
         }
+        MxNetMtcnn mtcnn;
     private:
         PredictorHandle pred_feature;
-        MxNetMtcnn mtcnn;
+
 };

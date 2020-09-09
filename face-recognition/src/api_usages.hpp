@@ -2,7 +2,7 @@
 // Created by jiaopan on 8/20/20.
 //
 
-void getPythonUsage(){
+void getUsage(){
     std::cout << "use api." << std::endl;
     std::cout << "result.status = 1 ---> success" << std::endl;
     std::cout << "result.status = -1 ---> error" << std::endl;
