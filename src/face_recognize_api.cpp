@@ -397,10 +397,11 @@ void getUsages(){
 
 /*----------------------------------------------------------------------------------------------*/
 
+
 int main() {
-    char* feature_model_params = "/home/jiaopan/projects/c++/mxnet-insightface-linux/face-recognition/model/feature_model/128/model-0000.params";
-    char* feature_model_json = "/home/jiaopan/projects/c++/mxnet-insightface-linux/face-recognition/model/feature_model/128/model-symbol.json";
-    int status = loadModel("/home/jiaopan/projects/c++/mxnet-insightface-linux/face-recognition/model/mtcnn", feature_model_params, feature_model_json);
+    char* feature_model_params = "/home/jiaopan/projects/c++/mxnet-insightface-linux/model/feature_model/128/model-0000.params";
+    char* feature_model_json = "/home/jiaopan/projects/c++/mxnet-insightface-linux/model/feature_model/128/model-symbol.json";
+    int status = loadModel("/home/jiaopan/projects/c++/mxnet-insightface-linux/model/mtcnn", feature_model_params, feature_model_json);
 
     //char* result = extractFaceFeatureByFile("/home/jiaopan/Downloads/dit.jpg",1,1);
     char* result = detectFaceByFile("/home/jiaopan/Downloads/zidane.jpg",0);
