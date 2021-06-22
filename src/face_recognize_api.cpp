@@ -52,7 +52,7 @@ char* detectFace(cv::Mat image,int type){
             cJSON_AddNumberToObject(face,"height",face_box.y1 - face_box.y0);
         }
     }
-    cJSON_AddNumberToObject(result, "status", 1);
+    cJSON_AddNumberToObject(result, "code", 0);
     cJSON_AddStringToObject(result, "msg", "detect success");
     cJSON_AddItemToObject(result, "faces", faces);
     resultJson = cJSON_PrintUnformatted(result);
@@ -64,7 +64,7 @@ char* extractFaceFeatureByImage(cv::Mat image,int type) {
     try {
         std::vector<cv::Mat>  aligned_faces = recognizer.createAlignFace(image,type);
         if (aligned_faces.size() == 0) {
-            cJSON_AddNumberToObject(result, "status", -1);
+            cJSON_AddNumberToObject(result, "code", 1);
             cJSON_AddStringToObject(result, "msg", "there is no face");
             cJSON_AddItemToObject(result, "embeddings", embeddings);
             resultJson = cJSON_PrintUnformatted(result);
@@ -84,14 +84,14 @@ char* extractFaceFeatureByImage(cv::Mat image,int type) {
             cJSON_AddItemToArray(embeddings, embedding = cJSON_CreateObject());
             cJSON_AddStringToObject(embedding, "embedding", values.c_str());
         }
-        cJSON_AddNumberToObject(result, "status", 1);
+        cJSON_AddNumberToObject(result, "code", 0);
         cJSON_AddStringToObject(result, "msg", "register success");
         cJSON_AddItemToObject(result, "embeddings", embeddings);
         resultJson = cJSON_PrintUnformatted(result);
         return resultJson;
     }
     catch (const std::exception&) {
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "register failed");
         cJSON_AddItemToObject(result, "embeddings", embeddings);
         resultJson = cJSON_PrintUnformatted(result);
@@ -105,7 +105,7 @@ char* extractFaceFeature(cv::Mat &face) {
     char *resultJson;
     try {
         if (face.empty()) {
-            cJSON_AddNumberToObject(result, "status", -1);
+            cJSON_AddNumberToObject(result, "code", 1);
             cJSON_AddStringToObject(result, "msg", "register failed,there is no face");
             cJSON_AddItemToObject(result, "embeddings", embeddings);
             resultJson = cJSON_PrintUnformatted(result);
@@ -125,14 +125,14 @@ char* extractFaceFeature(cv::Mat &face) {
         cJSON_AddItemToArray(embeddings, embedding = cJSON_CreateObject());
         cJSON_AddStringToObject(embedding, "embedding", values.c_str());
 
-        cJSON_AddNumberToObject(result, "status", 1);
+        cJSON_AddNumberToObject(result, "code", 0);
         cJSON_AddStringToObject(result, "msg", "register success");
         cJSON_AddItemToObject(result, "embeddings", embeddings);
         resultJson = cJSON_PrintUnformatted(result);
         return resultJson;
     }
     catch (const std::exception&) {
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "register failed");
         cJSON_AddItemToObject(result, "embeddings", embeddings);
         resultJson = cJSON_PrintUnformatted(result);
@@ -159,7 +159,7 @@ char* computeDistanceByMat(cv::Mat& base, cv::Mat& target,int detected) {
             std::vector<cv::Mat> target_vector = recognizer.createAlignFace(target,1);
 
             if ((base_vector.empty() || target_vector.empty())) {
-                cJSON_AddNumberToObject(result, "status", -1);
+                cJSON_AddNumberToObject(result, "code", 1);
                 cJSON_AddStringToObject(result, "msg", "compute failed,one of images has no face");
                 cJSON_AddNumberToObject(result, "distance", -1);
                 cJSON_AddNumberToObject(result, "sim", 0);
@@ -177,7 +177,7 @@ char* computeDistanceByMat(cv::Mat& base, cv::Mat& target,int detected) {
         if (sim > 100)
             sim = 100;
 
-        cJSON_AddNumberToObject(result, "status", 1);
+        cJSON_AddNumberToObject(result, "code", 0);
         cJSON_AddStringToObject(result, "msg", "compute success");
         cJSON_AddNumberToObject(result, "distance",distance);
         cJSON_AddNumberToObject(result, "sim", sim * 100);
@@ -185,7 +185,7 @@ char* computeDistanceByMat(cv::Mat& base, cv::Mat& target,int detected) {
         return resultJson;
     }
     catch (const std::exception&) {
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "compute failed");
         cJSON_AddNumberToObject(result, "distance", -1);
         cJSON_AddNumberToObject(result, "sim", 0);
@@ -221,7 +221,7 @@ char*  detectFaceByFile(char* src,int type){
         image = imread(src);
     }
     catch (const std::exception&){
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "detect failed,can not load file");
         cJSON_AddItemToObject(result, "faces", faces);
         resultJson = cJSON_PrintUnformatted(result);
@@ -240,7 +240,7 @@ char*  detectFaceByBase64(char* base64_data,int type){
         image = Utils::base64ToMat(data);
     }
     catch (const std::exception&) {
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "detect failed,can not convert base64 to Mat");
         cJSON_AddItemToObject(result, "embeddings", faces);
         resultJson = cJSON_PrintUnformatted(result);
@@ -257,7 +257,7 @@ char * extractFaceFeatureByFile(char * src, int detected = 0, int type = 0){
         image = imread(src);
     }
     catch (const std::exception&){
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "register failed,can not load file");
         cJSON_AddItemToObject(result, "embeddings", embeddings);
         resultJson = cJSON_PrintUnformatted(result);
@@ -307,7 +307,7 @@ char*  extractFaceFeatureByBase64(char* base64_data, int detected = 0,int type =
         image = Utils::base64ToMat(data);
     }
     catch (const std::exception&) {
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "register failed,can not convert base64 to Mat");
         cJSON_AddItemToObject(result, "embeddings", embeddings);
         resultJson = cJSON_PrintUnformatted(result);
@@ -335,7 +335,7 @@ char * computeDistance(char * base_emb, char * target_emb){
             sim = 0;
         if (sim > 100)
             sim = 100;
-        cJSON_AddNumberToObject(result, "status", 1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "compute success");
         cJSON_AddNumberToObject(result, "distance", distance);
         cJSON_AddNumberToObject(result, "sim", sim * 100);
@@ -343,7 +343,7 @@ char * computeDistance(char * base_emb, char * target_emb){
         return resultJson;
     }
     catch (const std::exception&){
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "compute failed");
         cJSON_AddNumberToObject(result, "distance", -1);
         cJSON_AddNumberToObject(result, "sim", 0);
@@ -361,7 +361,7 @@ char * computeDistanceByFile(char * base_src, char * target_src, int detected = 
         target = imread(target_src);
     }
     catch (const std::exception&){
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "can not load file");
         cJSON_AddNumberToObject(result, "distance", -1);
         cJSON_AddNumberToObject(result, "sim", 0);
@@ -381,7 +381,7 @@ char*  computeDistanceByBase64(char* base_data,char* target_data, int detected =
         target = Utils::base64ToMat(target_str);
     }
     catch (const std::exception&) {
-        cJSON_AddNumberToObject(result, "status", -1);
+        cJSON_AddNumberToObject(result, "code", 1);
         cJSON_AddStringToObject(result, "msg", "can not convert base64");
         cJSON_AddNumberToObject(result, "distance", -1);
         cJSON_AddNumberToObject(result, "sim", 0);
